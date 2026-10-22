@@ -1,0 +1,1 @@
+{"type": "marker", "file": "PLAN.md", "marker": "PLAN-ID: AOP-0002230a", "must_contain": ["slugify", "camel_to_snake", "truncate", "is_palindrome"]}

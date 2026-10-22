@@ -1,0 +1,326 @@
+PLAN-ID: AOP-0002230a
+
+# Implementation Plan: Pure-Python String Utilities Module (`stringutils.py`)
+
+## 1. Overview
+
+Build a small, dependency-free (pure Python standard library only) string-utilities
+module `stringutils.py` with four pure functions, plus a `unittest` test module
+`test_stringutils.py` that verifies normal cases, edge cases, and the mandated
+`ValueError` path. Both files live at the root of this workspace:
+
+- `stringutils.py` — the module under test
+- `test_stringutils.py` — the test module (runnable with `python -m unittest test_stringutils` or `python -m unittest discover`)
+
+No third-party packages, no I/O, no global mutable state, no side effects.
+All functions must be deterministic and must not mutate their arguments
+(strings are immutable in Python, so this is automatic — but no monkey-patching
+or logging side effects either).
+
+---
+
+## 2. Module Specification: `stringutils.py`
+
+Module docstring at top. Only `re` from the standard library is expected to be
+needed (implementation may also use only built-in string methods; either is
+acceptable as long as behavior matches this spec).
+
+### 2.1 `slugify(text: str) -> str`
+
+Convert arbitrary text into a URL-safe slug.
+
+**Behavior contract:**
+1. Lowercase the input (`str.lower()`).
+2. Every run of one or more consecutive characters that are NOT ASCII
+   alphanumeric (`a–z`, `A–Z`, `0–9`) is replaced by exactly ONE hyphen `-`.
+   - The alphanumerics to keep are determined AFTER lowercasing; uppercase
+     letters must be preserved as their lowercase equivalents, never replaced
+     by hyphens.
+3. Leading and trailing hyphens are stripped.
+
+**Examples (tests must cover these):**
+- `slugify("Hello, World!")` == `"hello-world"`
+- `slugify("  Multiple   spaces\tand-tabs ")` == `"multiple-spaces-and-tabs"`
+- `slugify("Already-slugified")` == `"already-slugified"` (single hyphens preserved, not doubled)
+- `slugify("!!!")` == `""` (only non-alphanumerics → empty string after strip)
+- `slugify("")` == `""`
+- `slugify("123 ABC xyz")` == `"123-abc-xyz"`
+- `slugify("a---b")` == `"a-b"` (runs of separators collapse to one hyphen)
+
+**Implementation notes (guidance, not assertions):**
+- A clean approach: `re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')`
+  or an equivalent loop-based implementation. Either style is acceptable.
+- Must be a pure function: no prints, no globals.
+
+### 2.2 `camel_to_snake(text: str) -> str`
+
+Convert camelCase / PascalCase identifiers to snake_case.
+
+**Behavior contract:**
+1. Insert `_` before an uppercase letter that follows a lowercase letter or a
+   digit (boundary inside a word): `camelCase` → `camel_case`, `getHTTP2Response`
+   boundary handling as specified by the rules below.
+2. Insert `_` between an uppercase letter and the following lowercase letter when
+   the uppercase letter ends an acronym run: `HTTPResponse` → `http_response`.
+3. Lowercase the result.
+4. Digits are treated like lowercase letters for boundary detection (no `_`
+   between a digit and a following lowercase letter beyond rule 1's digit→upper
+   boundary; a digit followed by an uppercase letter DOES get a boundary:
+   `version2Update` → `version2_update`).
+5. Input already in snake_case / all-lowercase must be returned unchanged
+   (lowercased, `_` characters preserved as-is): `snake_case` → `snake_case`,
+   `lower` → `lower`.
+6. Consecutive capitals form one acronym: `XMLHttpRequest` → `xml_http_request`.
+
+**Examples (tests must cover these):**
+- `camel_to_snake("camelCase")` == `"camel_case"`
+- `camel_to_snake("PascalCase")` == `"pascal_case"`
+- `camel_to_snake("simple")` == `"simple"` (no-op on lowercase)
+- `camel_to_snake("snake_case")` == `"snake_case"` (no-op on snake_case)
+- `camel_to_snake("HTTPResponse")` == `"http_response"`
+- `camel_to_snake("XMLHttpRequest")` == `"xml_http_request"`
+- `camel_to_snake("getHTTP2Response")` == `"get_http2_response"`
+- `camel_to_snake("version2Update")` == `"version2_update"` (digit→upper boundary)
+- `camel_to_snake("")` == `""`
+- `camel_to_snake("A")` == `"a"` (single char)
+- `camel_to_snake("ABC")` == `"abc"` (pure acronym run)
+
+**Implementation notes (guidance):**
+- Regex approach that satisfies the contract:
+  `re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', ...)` followed by
+  `re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', ...)` then `.lower()`.
+  This is the canonical two-pass transform; verify every listed example against
+  the chosen implementation before finalizing.
+- The two-pass order matters: pass 1 handles acronym→lowercase boundaries
+  (`HTTPResponse`), pass 2 handles lowercase/digit→uppercase boundaries
+  (`camelCase`, `version2Update`). Implementer must not swap them without
+  re-verifying all examples.
+
+### 2.3 `truncate(text: str, max_len: int) -> str`
+
+Truncate `text` to at most `max_len` characters, appending `'...'` when truncation occurs.
+
+**Behavior contract:**
+1. If `max_len < 4`, raise `ValueError` (the ellipsis `'...'` is 3 characters, so
+   a limit below 4 can never fit any content plus the ellipsis). The error may
+   be raised regardless of `text` content, including for empty `text` — the
+   test must assert `ValueError` is raised.
+2. If `len(text) <= max_len`, return `text` unchanged (no ellipsis appended,
+   even if the text is exactly `max_len` long).
+3. If `len(text) > max_len`, return `text[:max_len - 3] + '...'`.
+   The result length is exactly `max_len` and always ends with `'...'`.
+
+**Examples (tests must cover these):**
+- `truncate("hello world", 8)` == `"hello..."` (5 chars + 3 ellipsis = 8)
+- `truncate("hi", 10)` == `"hi"` (no truncation, no ellipsis)
+- `truncate("exact", 5)` == `"exact"` (len == max_len → unchanged, NO ellipsis)
+- `truncate("abcdef", 4)` == `"a..."` (minimum valid truncation)
+- `truncate("abcdef", 3)` raises `ValueError`
+- `truncate("abcdef", 0)` raises `ValueError`
+- `truncate("abcdef", -1)` raises `ValueError` (negative limits also invalid)
+- `truncate("", 4)` == `""` (empty text with valid limit → unchanged)
+- `truncate("abcdef", 6)` == `"abcdef"` (exactly fits)
+
+**Invariants the tests must assert:**
+- For every truncation case: `len(result) == max_len` and `result.endswith('...')`.
+- For every non-truncation case: `result is text` (or at minimum `result == text`
+  and `not result.endswith('...')`).
+
+### 2.4 `is_palindrome(text: str) -> bool`
+
+Case-insensitive palindrome check that ignores all non-alphanumeric characters.
+
+**Behavior contract:**
+1. Normalize: keep only alphanumeric characters (`str.isalnum()`), lowercase them.
+2. Return `True` iff the normalized string equals its reverse.
+3. Empty input or input containing no alphanumeric characters normalizes to `""`,
+   which is a palindrome by convention → return `True`.
+
+**Examples (tests must cover these):**
+- `is_palindrome("racecar")` is `True`
+- `is_palindrome("RaceCar")` is `True` (case-insensitive)
+- `is_palindrome("A man, a plan, a canal: Panama!")` is `True`
+- `is_palindrome("No 'x' in Nixon")` is `True`
+- `is_palindrome("hello")` is `False`
+- `is_palindrome("race a car")` is `False`
+- `is_palindrome("")` is `True`
+- `is_palindrome("!!! ,,,")` is `True` (no alphanumerics → empty → True)
+- `is_palindrome("12321")` is `True` (digits count as alphanumeric)
+- `is_palindrome("12345")` is `False`
+- `is_palindrome("ab")` is `False` (even-length non-palindrome)
+
+---
+
+## 3. Test Module Specification: `test_stringutils.py`
+
+### 3.1 Structure
+
+- Standard-library `unittest` only. `import unittest` and
+  `from stringutils import slugify, camel_to_snake, truncate, is_palindrome`.
+- One `unittest.TestCase` subclass per function, named:
+  - `TestSlugify`
+  - `TestCamelToSnake`
+  - `TestTruncate`
+  - `TestIsPalindrome`
+- Every test method name starts with `test_` and carries a docstring or
+  self-explanatory name describing the case.
+- Test methods must be independent of each other (no shared mutable state,
+  no ordering assumptions). Use `self.assertEqual`, `self.assertTrue`,
+  `self.assertFalse`, and `self.assertRaises` (preferred: `with self.assertRaises(ValueError):`).
+- No use of `print`; no reliance on Python version-specific behavior beyond
+  documented standard behavior.
+
+### 3.2 Exact assertions required
+
+**`TestSlugify` — must assert all of:**
+
+| # | Call | Expected |
+|---|------|----------|
+| S1 | `slugify("Hello, World!")` | `"hello-world"` |
+| S2 | `slugify("  Multiple   spaces\tand-tabs ")` | `"multiple-spaces-and-tabs"` |
+| S3 | `slugify("Already-slugified")` | `"already-slugified"` |
+| S4 | `slugify("!!!")` | `""` |
+| S5 | `slugify("")` | `""` |
+| S6 | `slugify("123 ABC xyz")` | `"123-abc-xyz"` |
+| S7 | `slugify("a---b")` | `"a-b"` |
+| S8 | `slugify("UPPER_case MIX")` | `"upper-case-mix"` (underscore is a non-alphanumeric separator) |
+
+**`TestCamelToSnake` — must assert all of:**
+
+| # | Call | Expected |
+|---|------|----------|
+| C1 | `camel_to_snake("camelCase")` | `"camel_case"` |
+| C2 | `camel_to_snake("PascalCase")` | `"pascal_case"` |
+| C3 | `camel_to_snake("simple")` | `"simple"` |
+| C4 | `camel_to_snake("snake_case")` | `"snake_case"` |
+| C5 | `camel_to_snake("HTTPResponse")` | `"http_response"` |
+| C6 | `camel_to_snake("XMLHttpRequest")` | `"xml_http_request"` |
+| C7 | `camel_to_snake("getHTTP2Response")` | `"get_http2_response"` |
+| C8 | `camel_to_snake("version2Update")` | `"version2_update"` |
+| C9 | `camel_to_snake("")` | `""` |
+| C10 | `camel_to_snake("A")` | `"a"` |
+| C11 | `camel_to_snake("ABC")` | `"abc"` |
+
+**`TestTruncate` — must assert all of:**
+
+| # | Call | Expected / Assertion |
+|---|------|----------------------|
+| T1 | `truncate("hello world", 8)` | `"hello..."` |
+| T2 | `truncate("hi", 10)` | `"hi"` |
+| T3 | `truncate("exact", 5)` | `"exact"` (assert no ellipsis appended: result does NOT end with `'...'`) |
+| T4 | `truncate("abcdef", 4)` | `"a..."` |
+| T5 | `truncate("abcdef", 6)` | `"abcdef"` |
+| T6 | `truncate("", 4)` | `""` |
+| T7 | `truncate("abcdef", 3)` | raises `ValueError` |
+| T8 | `truncate("abcdef", 0)` | raises `ValueError` |
+| T9 | `truncate("abcdef", -1)` | raises `ValueError` |
+| T10 | `truncate("", 3)` | raises `ValueError` (limit checked even for empty text) |
+| T11 | invariant check on T1 result | `len(result) == 8` and `result.endswith("...")` |
+| T12 | invariant on a custom case, e.g. `r = truncate("abcdefghij", 9)` | `r == "abcdef..."`, `len(r) == 9`, `r.endswith("...")` |
+
+**`TestIsPalindrome` — must assert all of:**
+
+| # | Call | Expected |
+|---|------|----------|
+| P1 | `is_palindrome("racecar")` | `True` |
+| P2 | `is_palindrome("RaceCar")` | `True` |
+| P3 | `is_palindrome("A man, a plan, a canal: Panama!")` | `True` |
+| P4 | `is_palindrome("No 'x' in Nixon")` | `True` |
+| P5 | `is_palindrome("hello")` | `False` |
+| P6 | `is_palindrome("race a car")` | `False` |
+| P7 | `is_palindrome("")` | `True` |
+| P8 | `is_palindrome("!!! ,,,")` | `True` |
+| P9 | `is_palindrome("12321")` | `True` |
+| P10 | `is_palindrome("12345")` | `False` |
+| P11 | `is_palindrome("ab")` | `False` |
+
+Notes on assertion style:
+- For boolean returns use `self.assertTrue(...)` / `self.assertFalse(...)` (or
+  `assertEqual(..., True/False)`); do not use only `assertIs` tricks.
+- For the `ValueError` cases use `with self.assertRaises(ValueError):` blocks.
+  The tests must NOT accept any other exception type (do not use bare `Exception`).
+
+### 3.3 Test-run mechanics
+
+- Test module must include:
+  ```python
+  if __name__ == "__main__":
+      unittest.main()
+  ```
+- Expected result: `python -m unittest test_stringutils -v` exits 0 with all
+  tests passing and zero failures/errors.
+
+---
+
+## 4. Edge Cases Summary (must be covered by at least one test each)
+
+1. Empty string input for all four functions.
+2. Strings with no alphanumerics (punctuation/whitespace only) — slugify → `""`,
+   is_palindrome → `True`.
+3. Already-normalized inputs (slug-like text, snake_case text) — idempotent.
+4. Boundary values for `truncate`: `max_len == 3` (invalid), `max_len == 4`
+   (minimum valid), `len(text) == max_len` (exact fit, no ellipsis),
+   `len(text) == max_len + 1` (minimal truncation).
+5. Negative `max_len` for `truncate`.
+6. Runs of consecutive separators in `slugify` collapse to a single hyphen.
+7. Digit/letter boundaries in `camel_to_snake` (`version2Update`, `getHTTP2Response`).
+8. Acronym handling in `camel_to_snake` (`HTTPResponse`, `XMLHttpRequest`).
+9. Mixed-case palindromes and punctuation-heavy palindromes.
+10. Numeric-only palindrome and non-palindrome.
+
+---
+
+## 5. Acceptance Criteria Checklist
+
+Implementation is complete when every item below is checked:
+
+- [ ] `stringutils.py` exists in the workspace root and imports cleanly
+      (`python -c "import stringutils"` succeeds with no output/errors).
+- [ ] `stringutils.py` exposes exactly the four public functions:
+      `slugify`, `camel_to_snake`, `truncate`, `is_palindrome`, each with the
+      signatures specified in Section 2 (all take `text: str` first;
+      `truncate` takes `max_len: int` second).
+- [ ] `slugify` lowercases input, collapses every run of non-alphanumeric
+      characters to a single `-`, and strips leading/trailing `-`
+      (S1–S8 all pass).
+- [ ] `slugify("")` == `""` and `slugify("!!!")` == `""`.
+- [ ] `camel_to_snake` handles camelCase, PascalCase, acronym runs, digit
+      boundaries, and is a no-op on lowercase/snake_case input (C1–C11 all pass).
+- [ ] `truncate` returns text unchanged when `len(text) <= max_len`, with no
+      ellipsis (T2, T3, T5, T6 pass).
+- [ ] `truncate` returns `text[:max_len-3] + '...'` when `len(text) > max_len`;
+      result length is exactly `max_len` and ends with `'...'` (T1, T4, T11,
+      T12 pass).
+- [ ] `truncate` raises `ValueError` for every `max_len < 4`, including `3`,
+      `0`, `-1`, and including when `text` is empty (T7–T10 pass).
+- [ ] `is_palindrome` is case-insensitive, ignores non-alphanumeric characters,
+      and returns `True` for empty/punctuation-only input (P1–P11 all pass).
+- [ ] All four functions are pure: deterministic, no printing, no file/network
+      I/O, no mutation of external state, no third-party imports.
+- [ ] `test_stringutils.py` exists in the workspace root and uses only
+      `unittest` + `stringutils` imports.
+- [ ] `test_stringutils.py` defines `TestSlugify`, `TestCamelToSnake`,
+      `TestTruncate`, `TestIsPalindrome`, each method named `test_*`.
+- [ ] Every assertion in the tables of Section 3.2 is present (S1–S8, C1–C11,
+      T1–T12, P1–P11) — nothing dropped, no weaker substitutes.
+- [ ] `ValueError` tests use `assertRaises(ValueError)` (not bare `Exception`).
+- [ ] `python -m unittest test_stringutils -v` runs all tests, reports 0
+      failures and 0 errors.
+- [ ] No files other than `stringutils.py`, `test_stringutils.py`, and `PLAN.md`
+      are created by this plan's implementation phase (no caches committed:
+      `__pycache__` must not be added to the deliverables).
+- [ ] Both modules include module-level docstrings; public functions include
+      docstrings stating the contract summarized in Section 2.
+
+---
+
+## 6. Out of Scope
+
+- Unicode-aware slugification/transliteration (e.g., `é` → `e`) — non-ASCII
+  characters are simply treated as separators by `slugify` per Section 2.1.
+  (`camel_to_snake` and `is_palindrome` are not required to define non-ASCII
+  behavior; tests do not exercise non-ASCII input there.)
+- Performance optimization, CLI entry points, type-validation beyond the
+  specified `ValueError` for `truncate` (e.g., behavior on `None` input is
+  unspecified and untested).
+- Any packaging metadata (`pyproject.toml`, `setup.py`) — plain module files only.

@@ -1,0 +1,44 @@
+{
+  "system_id": "clean-landing-v1",
+  "title": "Clean Marketing / Landing System",
+  "license": "MIT (original work, created for this project)",
+  "use_when": "public-facing products: landing pages, marketing sites, waitlists",
+  "tokens": {
+    "color_bg": "#ffffff",
+    "color_surface_alt": "#f8fafc",
+    "color_primary": "#4f46e5",
+    "color_primary_hover": "#4338ca",
+    "color_accent": "#06b6d4",
+    "color_text": "#0f172a",
+    "color_text_muted": "#475569",
+    "color_border": "#e2e8f0",
+    "font_family": "'Inter', 'Segoe UI', system-ui, sans-serif",
+    "font_size_hero": "52px",
+    "font_size_h2": "34px",
+    "font_size_base": "17px",
+    "spacing_unit": "8px",
+    "radius": "12px",
+    "shadow_card": "0 10px 30px rgba(2,6,23,0.08)"
+  },
+  "layout": {
+    "structure": "sticky top nav (72px) + full-bleed hero + feature grid + social proof + footer",
+    "hero": "two-column on desktop (copy + product visual), stacked on mobile",
+    "sections": "alternating bg and surface_alt, 96px vertical padding desktop / 56px mobile",
+    "breakpoints": { "mobile": "<=768px single column, hero font 32px", "tablet": "769-1100px two-column grid" }
+  },
+  "components": {
+    "button_primary": "bg color_primary, white text, radius, padding 12px 24px, hover color_primary_hover",
+    "button_ghost": "transparent, 1px color_border, color_text",
+    "feature_card": "surface white, radius, shadow_card, icon + h3 + 2-line body",
+    "nav": "logo left, links center, CTA right; collapses to hamburger on mobile",
+    "state_loading": "shimmer on hero visual",
+    "state_error": "inline color_danger text under forms"
+  },
+  "usability_rules": [
+    "single primary CTA above the fold",
+    "all interactive elements >= 44px hit area",
+    "text contrast >= 4.5:1",
+    "no horizontal scrolling at 375px, 768px, 1280px",
+    "visible focus rings on all interactive elements"
+  ]
+}

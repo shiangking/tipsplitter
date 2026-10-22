@@ -1,0 +1,4 @@
+Create a file named exactly NOTES.md in your current workspace. It must start with the line:
+INTERRUPT-DEMO: AOP-bd2dbb8b
+
+Then write a short section titled 'three observations' containing exactly three numbered observations about multi-agent orchestration (one sentence each). When done, reply with just: NOTES-COMPLETE

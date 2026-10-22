@@ -1,0 +1,21 @@
+{
+ "task_id": "doomed",
+ "kind": "static",
+ "passed": false,
+ "checks": [
+  {
+   "check": "contains:CONTRACT-ID: cdaec609",
+   "ok": false,
+   "detail": "'CONTRACT-ID: cdaec609' in CONTRACT.md"
+  },
+  {
+   "check": "contains:I acknowledge",
+   "ok": true,
+   "detail": "'I acknowledge' in CONTRACT.md"
+  }
+ ],
+ "command": null,
+ "exit_code": null,
+ "stdout_tail": "",
+ "stderr_tail": ""
+}

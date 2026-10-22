@@ -1,0 +1,159 @@
+initial gates: failed
+2026-10-22T15:05:14.905Z [INFO] [repair-secret_scan-c1] launched deepseekv4.1 conversation 834f60c1 ws=/tmp/e3-run/ws/repair-secret_scan-c1
+2026-10-22T15:05:37.229Z [INFO] [repair-dep_audit-c1] launched deepseekv4.1 conversation 1c5f9ad2 ws=/tmp/e3-run/ws/repair-dep_audit-c1
+2026-10-22T15:06:29.815Z [INFO] [repair-env_handling-c1] launched deepseekv4.1 conversation 2b07e9ca ws=/tmp/e3-run/ws/repair-env_handling-c1
+2026-10-22T15:09:52.696Z [INFO] [repair-dom_check:desktop-c1] launched qwen3.8flash conversation e85dabb3 ws=/tmp/e3-run/ws/repair-dom_check-desktop-c1
+2026-10-22T15:10:50.275Z [INFO] [repair-dom_check:tablet-c1] launched qwen3.8flash conversation bbe19608 ws=/tmp/e3-run/ws/repair-dom_check-tablet-c1
+2026-10-22T15:14:43.634Z [INFO] [repair-dom_check:mobile-c1] launched qwen3.8flash conversation 8195bff0 ws=/tmp/e3-run/ws/repair-dom_check-mobile-c1
+{
+ "outcome": "unavailable_components",
+ "cycles": 1,
+ "history": [
+  {
+   "cycle": 1,
+   "gate": "secret_scan",
+   "family": "security",
+   "routed_to": "deepseekv4.1",
+   "conversation_id": "834f60c1-c97b-48fd-804d-a8a0e5f1164b",
+   "agent_succeeded": true,
+   "served_model": "openai/x-test-2",
+   "changed_test_files": [],
+   "independent_review": null,
+   "gates_after": {
+    "overall": "failed",
+    "families": {
+     "security": {
+      "passed": 2,
+      "failed": 2,
+      "unavailable": 0,
+      "blocked": 0
+     },
+     "browser": {
+      "passed": 1,
+      "failed": 3,
+      "unavailable": 0,
+      "blocked": 0
+     }
+    },
+    "gates": [
+     {
+      "gate": "secret_scan",
+      "family": "security",
+      "status": "passed"
+     },
+     {
+      "gate": "sast",
+      "family": "security",
+      "status": "passed"
+     },
+     {
+      "gate": "dep_audit",
+      "family": "security",
+      "status": "failed"
+     },
+     {
+      "gate": "env_handling",
+      "family": "security",
+      "status": "failed"
+     },
+     {
+      "gate": "responsive_screenshots",
+      "family": "browser",
+      "status": "passed"
+     },
+     {
+      "gate": "dom_check:desktop",
+      "family": "browser",
+      "status": "failed"
+     },
+     {
+      "gate": "dom_check:tablet",
+      "family": "browser",
+      "status": "failed"
+     },
+     {
+      "gate": "dom_check:mobile",
+      "family": "browser",
+      "status": "failed"
+     }
+    ]
+   },
+   "regression_clean": false
+  },
+  {
+   "cycle": 1,
+   "gate": "dep_audit",
+   "family": "security",
+   "routed_to": "deepseekv4.1",
+   "conversation_id": "1c5f9ad2-ae36-48c4-9921-e48510df3616",
+   "agent_succeeded": true,
+   "served_model": "openai/x-test-2",
+   "changed_test_files": [],
+   "independent_review": null,
+   "gates_after": {
+    "overall": "failed",
+    "families": {
+     "security": {
+      "passed": 2,
+      "failed": 1,
+      "unavailable": 1,
+      "blocked": 0
+     },
+     "browser": {
+      "passed": 1,
+      "failed": 3,
+      "unavailable": 0,
+      "blocked": 0
+     }
+    },
+    "gates": [
+     {
+      "gate": "secret_scan",
+      "family": "security",
+      "status": "passed"
+     },
+     {
+      "gate": "sast",
+      "family": "security",
+      "status": "passed"
+     },
+     {
+      "gate": "dep_audit",
+      "family": "security",
+      "status": "unavailable"
+     },
+     {
+      "gate": "env_handling",
+      "family": "security",
+      "status": "failed"
+     },
+     {
+      "gate": "responsive_screenshots",
+      "family": "browser",
+      "status": "passed"
+     },
+     {
+      "gate": "dom_check:desktop",
+      "family": "browser",
+      "status": "failed"
+     },
+     {
+      "gate": "dom_check:tablet",
+      "family": "browser",
+      "status": "failed"
+     },
+     {
+      "gate": "dom_check:mobile",
+      "family": "browser",
+      "status": "failed"
+     }
+    ]
+   },
+   "regression_clean": false
+  },
+  {
+   "cycle": 1,
+   "gate": "env_handling",
+   "family": "security",
+   "rout
+DONE

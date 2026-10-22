@@ -1,0 +1,1 @@
+Create a file named exactly bigfile.txt containing 10000 lines, where line N reads exactly 'line-NNNNN' (zero-padded to 5 digits, starting at line-00000). Use a shell loop or python one-liner to generate it. Verify the line count is 10000. When done, reply with just: BIGFILE-COMPLETE

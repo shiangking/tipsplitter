@@ -1,0 +1,27 @@
+{
+ "project_id": "proj-1792686232-tipsplitter",
+ "dir": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792686232-tipsplitter",
+ "template": "clean-landing-v1"
+}
+2026-10-22T16:23:57.543Z [INFO] [plan] launched glm5.3 conversation f11389e2 ws=/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792686232-tipsplitter/agent-workspaces/plan
+{
+ "project": "proj-1792686232-tipsplitter",
+ "stage": "build",
+ "status": "blocked",
+ "detail": {
+  "ok": false,
+  "failed_workers": [
+   {
+    "id": "worker-b",
+    "status": "error",
+    "error": "POST /api/conversations -> HTTP 500: {\"detail\":\"Internal Server Error\",\"exception\":\"object of type 'NoneType' has no len()\",\"error_id\":\"bb928ddc5b9e486facaf45ccd3a7124e\"}"
+   },
+   {
+    "id": "worker-a",
+    "status": "error",
+    "error": "POST /api/conversations -> HTTP 500: {\"detail\":\"Internal Server Error\",\"exception\":\"object of type 'NoneType' has no len()\",\"error_id\":\"191376cbd6764782b8678d537ce4f90f\"}"
+   }
+  ]
+ }
+}
+factory rc: 4

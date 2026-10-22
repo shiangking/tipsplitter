@@ -1,0 +1,1 @@
+{"type": "unittest", "command": "python3 -m unittest discover -v", "needs": ["stringutils.py", "test_stringutils.py"]}

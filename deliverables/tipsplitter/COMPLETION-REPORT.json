@@ -1,0 +1,92 @@
+{
+  "generated_at": "2026-10-22T18:05:55Z",
+  "technical_gates": {},
+  "browser_gates": {
+    "responsive_screenshots": "passed",
+    "dom_check:desktop": "passed",
+    "dom_check:tablet": "passed",
+    "dom_check:mobile": "passed"
+  },
+  "visual_gates": {},
+  "security_gates": {
+    "secret_scan": "passed",
+    "sast": "passed",
+    "dep_audit": "unavailable",
+    "env_handling": "passed"
+  },
+  "product_quality_acceptance": {
+    "status": "BLOCKED",
+    "reason": "LLM vision review unavailable (no vision-capable profile; see docs/VISION-CAPABILITY.md). Per Phase E condition 2, unattended product-quality acceptance is blocked."
+  },
+  "repair_summary": {
+    "outcome": "unavailable_components",
+    "cycles": 0,
+    "history": [],
+    "final": {
+      "overall": "passed_with_unavailable",
+      "families": {
+        "security": {
+          "passed": 3,
+          "failed": 0,
+          "unavailable": 1,
+          "blocked": 0
+        },
+        "browser": {
+          "passed": 4,
+          "failed": 0,
+          "unavailable": 0,
+          "blocked": 0
+        }
+      },
+      "gates": [
+        {
+          "gate": "secret_scan",
+          "family": "security",
+          "status": "passed"
+        },
+        {
+          "gate": "sast",
+          "family": "security",
+          "status": "passed"
+        },
+        {
+          "gate": "dep_audit",
+          "family": "security",
+          "status": "unavailable"
+        },
+        {
+          "gate": "env_handling",
+          "family": "security",
+          "status": "passed"
+        },
+        {
+          "gate": "responsive_screenshots",
+          "family": "browser",
+          "status": "passed"
+        },
+        {
+          "gate": "dom_check:desktop",
+          "family": "browser",
+          "status": "passed"
+        },
+        {
+          "gate": "dom_check:tablet",
+          "family": "browser",
+          "status": "passed"
+        },
+        {
+          "gate": "dom_check:mobile",
+          "family": "browser",
+          "status": "passed"
+        }
+      ]
+    }
+  },
+  "delivery": {
+    "repo": "not-created (gated: requires approval)",
+    "branch": "integration",
+    "push": "blocked (requires recorded approval + GITHUB_TOKEN)",
+    "pull_request": "prepared, not opened (gated)"
+  },
+  "unresolved": []
+}

@@ -1,0 +1,37 @@
+{
+ "project_id": "proj-1792690256-tipsplitter",
+ "dir": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792690256-tipsplitter",
+ "template": "clean-landing-v1"
+}
+2026-10-22T17:31:00.698Z [INFO] [plan] launched glm5.3 conversation 67981c29 ws=/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792690256-tipsplitter/agent-workspaces/plan
+2026-10-22T17:32:49.568Z [WARN] [None] launch attempt 2 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"22aa5697498b404b97ef89d5c104b3a4"}); retrying in 5s
+2026-10-22T17:33:00.609Z [WARN] [None] launch attempt 3 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"33f8d93a2f954c129ebaa044c76a3b75"}); retrying in 10s
+2026-10-22T17:33:16.646Z [WARN] [None] launch attempt 4 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"896137fdce5949dea38cafa6db664897"}); retrying in 20s
+2026-10-22T17:33:42.693Z [WARN] [None] launch attempt 5 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"493d32ef749444dca51cc503c5af7efe"}); retrying in 40s
+2026-10-22T17:34:28.733Z [WARN] [None] launch attempt 6 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"5b0505b2c02a4fd1bcb7fd58e8010be0"}); retrying in 60s
+2026-10-22T17:35:40.796Z [WARN] [None] launch attempt 2 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"5abaebbbfd0d438ab56104c17af9d9f0"}); retrying in 5s
+2026-10-22T17:35:51.829Z [WARN] [None] launch attempt 3 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"e89ca392636546259dfe8364ec10551e"}); retrying in 10s
+2026-10-22T17:36:07.879Z [WARN] [None] launch attempt 4 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"2bdf621ed4924221ac4286a938558c15"}); retrying in 20s
+2026-10-22T17:36:33.924Z [WARN] [None] launch attempt 5 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"dc9c6d361d094f8b99fed314c15a99cd"}); retrying in 40s
+2026-10-22T17:37:19.962Z [WARN] [None] launch attempt 6 failed (POST /api/conversations -> HTTP 500: {"detail":"Internal Server Error","exception":"object of type 'NoneType' has no len()","error_id":"78517db8ad244dac81601eb17fe699a3"}); retrying in 60s
+{
+ "project": "proj-1792690256-tipsplitter",
+ "stage": "build",
+ "status": "blocked",
+ "detail": {
+  "ok": false,
+  "failed_workers": [
+   {
+    "id": "worker-a",
+    "status": "error",
+    "error": "conversation create failed after retries: POST /api/conversations -> HTTP 500: {\"detail\":\"Internal Server Error\",\"exception\":\"object of type 'NoneType' has no len()\",\"error_id\":\"5b0505b2c02a4fd1bcb7fd58e8010be0\"}"
+   },
+   {
+    "id": "worker-b",
+    "status": "error",
+    "error": "conversation create failed after retries: POST /api/conversations -> HTTP 500: {\"detail\":\"Internal Server Error\",\"exception\":\"object of type 'NoneType' has no len()\",\"error_id\":\"78517db8ad244dac81601eb17fe699a3\"}"
+   }
+  ]
+ }
+}
+factory rc: 4

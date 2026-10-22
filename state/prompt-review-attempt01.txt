@@ -1,0 +1,1166 @@
+You are the INDEPENDENT REVIEW agent. You did not write any of this code. Judge it strictly.
+
+A planner, a backend implementer, and a frontend implementer produced the following. A deterministic verifier already ran the backend tests OUTSIDE any LLM; its result is reported below and you must treat it as ground truth for test pass/fail (you may critique test quality regardless).
+
+===== VERIFICATION RESULT (ground truth, produced by deterministic verifier) =====
+[plan] deterministic verification: PASSED (exit=0, command: marker)
+[implement] deterministic verification: PASSED (exit=0, command: python3 -m unittest discover -v)
+[frontend] deterministic verification: PASSED (exit=0, command: static)
+===== END VERIFICATION RESULT =====
+
+===== PLAN (verbatim) =====
+----- plan/PLAN.md -----
+PLAN-ID: AOP-0002230a
+
+# Implementation Plan: Pure-Python String Utilities Module (`stringutils.py`)
+
+## 1. Overview
+
+Build a small, dependency-free (pure Python standard library only) string-utilities
+module `stringutils.py` with four pure functions, plus a `unittest` test module
+`test_stringutils.py` that verifies normal cases, edge cases, and the mandated
+`ValueError` path. Both files live at the root of this workspace:
+
+- `stringutils.py` — the module under test
+- `test_stringutils.py` — the test module (runnable with `python -m unittest test_stringutils` or `python -m unittest discover`)
+
+No third-party packages, no I/O, no global mutable state, no side effects.
+All functions must be deterministic and must not mutate their arguments
+(strings are immutable in Python, so this is automatic — but no monkey-patching
+or logging side effects either).
+
+---
+
+## 2. Module Specification: `stringutils.py`
+
+Module docstring at top. Only `re` from the standard library is expected to be
+needed (implementation may also use only built-in string methods; either is
+acceptable as long as behavior matches this spec).
+
+### 2.1 `slugify(text: str) -> str`
+
+Convert arbitrary text into a URL-safe slug.
+
+**Behavior contract:**
+1. Lowercase the input (`str.lower()`).
+2. Every run of one or more consecutive characters that are NOT ASCII
+   alphanumeric (`a–z`, `A–Z`, `0–9`) is replaced by exactly ONE hyphen `-`.
+   - The alphanumerics to keep are determined AFTER lowercasing; uppercase
+     letters must be preserved as their lowercase equivalents, never replaced
+     by hyphens.
+3. Leading and trailing hyphens are stripped.
+
+**Examples (tests must cover these):**
+- `slugify("Hello, World!")` == `"hello-world"`
+- `slugify("  Multiple   spaces\tand-tabs ")` == `"multiple-spaces-and-tabs"`
+- `slugify("Already-slugified")` == `"already-slugified"` (single hyphens preserved, not doubled)
+- `slugify("!!!")` == `""` (only non-alphanumerics → empty string after strip)
+- `slugify("")` == `""`
+- `slugify("123 ABC xyz")` == `"123-abc-xyz"`
+- `slugify("a---b")` == `"a-b"` (runs of separators collapse to one hyphen)
+
+**Implementation notes (guidance, not assertions):**
+- A clean approach: `re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')`
+  or an equivalent loop-based implementation. Either style is acceptable.
+- Must be a pure function: no prints, no globals.
+
+### 2.2 `camel_to_snake(text: str) -> str`
+
+Convert camelCase / PascalCase identifiers to snake_case.
+
+**Behavior contract:**
+1. Insert `_` before an uppercase letter that follows a lowercase letter or a
+   digit (boundary inside a word): `camelCase` → `camel_case`, `getHTTP2Response`
+   boundary handling as specified by the rules below.
+2. Insert `_` between an uppercase letter and the following lowercase letter when
+   the uppercase letter ends an acronym run: `HTTPResponse` → `http_response`.
+3. Lowercase the result.
+4. Digits are treated like lowercase letters for boundary detection (no `_`
+   between a digit and a following lowercase letter beyond rule 1's digit→upper
+   boundary; a digit followed by an uppercase letter DOES get a boundary:
+   `version2Update` → `version2_update`).
+5. Input already in snake_case / all-lowercase must be returned unchanged
+   (lowercased, `_` characters preserved as-is): `snake_case` → `snake_case`,
+   `lower` → `lower`.
+6. Consecutive capitals form one acronym: `XMLHttpRequest` → `xml_http_request`.
+
+**Examples (tests must cover these):**
+- `camel_to_snake("camelCase")` == `"camel_case"`
+- `camel_to_snake("PascalCase")` == `"pascal_case"`
+- `camel_to_snake("simple")` == `"simple"` (no-op on lowercase)
+- `camel_to_snake("snake_case")` == `"snake_case"` (no-op on snake_case)
+- `camel_to_snake("HTTPResponse")` == `"http_response"`
+- `camel_to_snake("XMLHttpRequest")` == `"xml_http_request"`
+- `camel_to_snake("getHTTP2Response")` == `"get_http2_response"`
+- `camel_to_snake("version2Update")` == `"version2_update"` (digit→upper boundary)
+- `camel_to_snake("")` == `""`
+- `camel_to_snake("A")` == `"a"` (single char)
+- `camel_to_snake("ABC")` == `"abc"` (pure acronym run)
+
+**Implementation notes (guidance):**
+- Regex approach that satisfies the contract:
+  `re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', ...)` followed by
+  `re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', ...)` then `.lower()`.
+  This is the canonical two-pass transform; verify every listed example against
+  the chosen implementation before finalizing.
+- The two-pass order matters: pass 1 handles acronym→lowercase boundaries
+  (`HTTPResponse`), pass 2 handles lowercase/digit→uppercase boundaries
+  (`camelCase`, `version2Update`). Implementer must not swap them without
+  re-verifying all examples.
+
+### 2.3 `truncate(text: str, max_len: int) -> str`
+
+Truncate `text` to at most `max_len` characters, appending `'...'` when truncation occurs.
+
+**Behavior contract:**
+1. If `max_len < 4`, raise `ValueError` (the ellipsis `'...'` is 3 characters, so
+   a limit below 4 can never fit any content plus the ellipsis). The error may
+   be raised regardless of `text` content, including for empty `text` — the
+   test must assert `ValueError` is raised.
+2. If `len(text) <= max_len`, return `text` unchanged (no ellipsis appended,
+   even if the text is exactly `max_len` long).
+3. If `len(text) > max_len`, return `text[:max_len - 3] + '...'`.
+   The result length is exactly `max_len` and always ends with `'...'`.
+
+**Examples (tests must cover these):**
+- `truncate("hello world", 8)` == `"hello..."` (5 chars + 3 ellipsis = 8)
+- `truncate("hi", 10)` == `"hi"` (no truncation, no ellipsis)
+- `truncate("exact", 5)` == `"exact"` (len == max_len → unchanged, NO ellipsis)
+- `truncate("abcdef", 4)` == `"a..."` (minimum valid truncation)
+- `truncate("abcdef", 3)` raises `ValueError`
+- `truncate("abcdef", 0)` raises `ValueError`
+- `truncate("abcdef", -1)` raises `ValueError` (negative limits also invalid)
+- `truncate("", 4)` == `""` (empty text with valid limit → unchanged)
+- `truncate("abcdef", 6)` == `"abcdef"` (exactly fits)
+
+**Invariants the tests must assert:**
+- For every truncation case: `len(result) == max_len` and `result.endswith('...')`.
+- For every non-truncation case: `result is text` (or at minimum `result == text`
+  and `not result.endswith('...')`).
+
+### 2.4 `is_palindrome(text: str) -> bool`
+
+Case-insensitive palindrome check that ignores all non-alphanumeric characters.
+
+**Behavior contract:**
+1. Normalize: keep only alphanumeric characters (`str.isalnum()`), lowercase them.
+2. Return `True` iff the normalized string equals its reverse.
+3. Empty input or input containing no alphanumeric characters normalizes to `""`,
+   which is a palindrome by convention → return `True`.
+
+**Examples (tests must cover these):**
+- `is_palindrome("racecar")` is `True`
+- `is_palindrome("RaceCar")` is `True` (case-insensitive)
+- `is_palindrome("A man, a plan, a canal: Panama!")` is `True`
+- `is_palindrome("No 'x' in Nixon")` is `True`
+- `is_palindrome("hello")` is `False`
+- `is_palindrome("race a car")` is `False`
+- `is_palindrome("")` is `True`
+- `is_palindrome("!!! ,,,")` is `True` (no alphanumerics → empty → True)
+- `is_palindrome("12321")` is `True` (digits count as alphanumeric)
+- `is_palindrome("12345")` is `False`
+- `is_palindrome("ab")` is `False` (even-length non-palindrome)
+
+---
+
+## 3. Test Module Specification: `test_stringutils.py`
+
+### 3.1 Structure
+
+- Standard-library `unittest` only. `import unittest` and
+  `from stringutils import slugify, camel_to_snake, truncate, is_palindrome`.
+- One `unittest.TestCase` subclass per function, named:
+  - `TestSlugify`
+  - `TestCamelToSnake`
+  - `TestTruncate`
+  - `TestIsPalindrome`
+- Every test method name starts with `test_` and carries a docstring or
+  self-explanatory name describing the case.
+- Test methods must be independent of each other (no shared mutable state,
+  no ordering assumptions). Use `self.assertEqual`, `self.assertTrue`,
+  `self.assertFalse`, and `self.assertRaises` (preferred: `with self.assertRaises(ValueError):`).
+- No use of `print`; no reliance on Python version-specific behavior beyond
+  documented standard behavior.
+
+### 3.2 Exact assertions required
+
+**`TestSlugify` — must assert all of:**
+
+| # | Call | Expected |
+|---|------|----------|
+| S1 | `slugify("Hello, World!")` | `"hello-world"` |
+| S2 | `slugify("  Multiple   spaces\tand-tabs ")` | `"multiple-spaces-and-tabs"` |
+| S3 | `slugify("Already-slugified")` | `"already-slugified"` |
+| S4 | `slugify("!!!")` | `""` |
+| S5 | `slugify("")` | `""` |
+| S6 | `slugify("123 ABC xyz")` | `"123-abc-xyz"` |
+| S7 | `slugify("a---b")` | `"a-b"` |
+| S8 | `slugify("UPPER_case MIX")` | `"upper-case-mix"` (underscore is a non-alphanumeric separator) |
+
+**`TestCamelToSnake` — must assert all of:**
+
+| # | Call | Expected |
+|---|------|----------|
+| C1 | `camel_to_snake("camelCase")` | `"camel_case"` |
+| C2 | `camel_to_snake("PascalCase")` | `"pascal_case"` |
+| C3 | `camel_to_snake("simple")` | `"simple"` |
+| C4 | `camel_to_snake("snake_case")` | `"snake_case"` |
+| C5 | `camel_to_snake("HTTPResponse")` | `"http_response"` |
+| C6 | `camel_to_snake("XMLHttpRequest")` | `"xml_http_request"` |
+| C7 | `camel_to_snake("getHTTP2Response")` | `"get_http2_response"` |
+| C8 | `camel_to_snake("version2Update")` | `"version2_update"` |
+| C9 | `camel_to_snake("")` | `""` |
+| C10 | `camel_to_snake("A")` | `"a"` |
+| C11 | `camel_to_snake("ABC")` | `"abc"` |
+
+**`TestTruncate` — must assert all of:**
+
+| # | Call | Expected / Assertion |
+|---|------|----------------------|
+| T1 | `truncate("hello world", 8)` | `"hello..."` |
+| T2 | `truncate("hi", 10)` | `"hi"` |
+| T3 | `truncate("exact", 5)` | `"exact"` (assert no ellipsis appended: result does NOT end with `'...'`) |
+| T4 | `truncate("abcdef", 4)` | `"a..."` |
+| T5 | `truncate("abcdef", 6)` | `"abcdef"` |
+| T6 | `truncate("", 4)` | `""` |
+| T7 | `truncate("abcdef", 3)` | raises `ValueError` |
+| T8 | `truncate("abcdef", 0)` | raises `ValueError` |
+| T9 | `truncate("abcdef", -1)` | raises `ValueError` |
+| T10 | `truncate("", 3)` | raises `ValueError` (limit checked even for empty text) |
+| T11 | invariant check on T1 result | `len(result) == 8` and `result.endswith("...")` |
+| T12 | invariant on a custom case, e.g. `r = truncate("abcdefghij", 9)` | `r == "abcdef..."`, `len(r) == 9`, `r.endswith("...")` |
+
+**`TestIsPalindrome` — must assert all of:**
+
+| # | Call | Expected |
+|---|------|----------|
+| P1 | `is_palindrome("racecar")` | `True` |
+| P2 | `is_palindrome("RaceCar")` | `True` |
+| P3 | `is_palindrome("A man, a plan, a canal: Panama!")` | `True` |
+| P4 | `is_palindrome("No 'x' in Nixon")` | `True` |
+| P5 | `is_palindrome("hello")` | `False` |
+| P6 | `is_palindrome("race a car")` | `False` |
+| P7 | `is_palindrome("")` | `True` |
+| P8 | `is_palindrome("!!! ,,,")` | `True` |
+| P9 | `is_palindrome("12321")` | `True` |
+| P10 | `is_palindrome("12345")` | `False` |
+| P11 | `is_palindrome("ab")` | `False` |
+
+Notes on assertion style:
+- For boolean returns use `self.assertTrue(...)` / `self.assertFalse(...)` (or
+  `assertEqual(..., True/False)`); do not use only `assertIs` tricks.
+- For the `ValueError` cases use `with self.assertRaises(ValueError):` blocks.
+  The tests must NOT accept any other exception type (do not use bare `Exception`).
+
+### 3.3 Test-run mechanics
+
+- Test module must include:
+  ```python
+  if __name__ == "__main__":
+      unittest.main()
+  ```
+- Expected result: `python -m unittest test_stringutils -v` exits 0 with all
+  tests passing and zero failures/errors.
+
+---
+
+## 4. Edge Cases Summary (must be covered by at least one test each)
+
+1. Empty string input for all four functions.
+2. Strings with no alphanumerics (punctuation/whitespace only) — slugify → `""`,
+   is_palindrome → `True`.
+3. Already-normalized inputs (slug-like text, snake_case text) — idempotent.
+4. Boundary values for `truncate`: `max_len == 3` (invalid), `max_len == 4`
+   (minimum valid), `len(text) == max_len` (exact fit, no ellipsis),
+   `len(text) == max_len + 1` (minimal truncation).
+5. Negative `max_len` for `truncate`.
+6. Runs of consecutive separators in `slugify` collapse to a single hyphen.
+7. Digit/letter boundaries in `camel_to_snake` (`version2Update`, `getHTTP2Response`).
+8. Acronym handling in `camel_to_snake` (`HTTPResponse`, `XMLHttpRequest`).
+9. Mixed-case palindromes and punctuation-heavy palindromes.
+10. Numeric-only palindrome and non-palindrome.
+
+---
+
+## 5. Acceptance Criteria Checklist
+
+Implementation is complete when every item below is checked:
+
+- [ ] `stringutils.py` exists in the workspace root and imports cleanly
+      (`python -c "import stringutils"` succeeds with no output/errors).
+- [ ] `stringutils.py` exposes exactly the four public functions:
+      `slugify`, `camel_to_snake`, `truncate`, `is_palindrome`, each with the
+      signatures specified in Section 2 (all take `text: str` first;
+      `truncate` takes `max_len: int` second).
+- [ ] `slugify` lowercases input, collapses every run of non-alphanumeric
+      characters to a single `-`, and strips leading/trailing `-`
+      (S1–S8 all pass).
+- [ ] `slugify("")` == `""` and `slugify("!!!")` == `""`.
+- [ ] `camel_to_snake` handles camelCase, PascalCase, acronym runs, digit
+      boundaries, and is a no-op on lowercase/snake_case input (C1–C11 all pass).
+- [ ] `truncate` returns text unchanged when `len(text) <= max_len`, with no
+      ellipsis (T2, T3, T5, T6 pass).
+- [ ] `truncate` returns `text[:max_len-3] + '...'` when `len(text) > max_len`;
+      result length is exactly `max_len` and ends with `'...'` (T1, T4, T11,
+      T12 pass).
+- [ ] `truncate` raises `ValueError` for every `max_len < 4`, including `3`,
+      `0`, `-1`, and including when `text` is empty (T7–T10 pass).
+- [ ] `is_palindrome` is case-insensitive, ignores non-alphanumeric characters,
+      and returns `True` for empty/punctuation-only input (P1–P11 all pass).
+- [ ] All four functions are pure: deterministic, no printing, no file/network
+      I/O, no mutation of external state, no third-party imports.
+- [ ] `test_stringutils.py` exists in the workspace root and uses only
+      `unittest` + `stringutils` imports.
+- [ ] `test_stringutils.py` defines `TestSlugify`, `TestCamelToSnake`,
+      `TestTruncate`, `TestIsPalindrome`, each method named `test_*`.
+- [ ] Every assertion in the tables of Section 3.2 is present (S1–S8, C1–C11,
+      T1–T12, P1–P11) — nothing dropped, no weaker substitutes.
+- [ ] `ValueError` tests use `assertRaises(ValueError)` (not bare `Exception`).
+- [ ] `python -m unittest test_stringutils -v` runs all tests, reports 0
+      failures and 0 errors.
+- [ ] No files other than `stringutils.py`, `test_stringutils.py`, and `PLAN.md`
+      are created by this plan's implementation phase (no caches committed:
+      `__pycache__` must not be added to the deliverables).
+- [ ] Both modules include module-level docstrings; public functions include
+      docstrings stating the contract summarized in Section 2.
+
+---
+
+## 6. Out of Scope
+
+- Unicode-aware slugification/transliteration (e.g., `é` → `e`) — non-ASCII
+  characters are simply treated as separators by `slugify` per Section 2.1.
+  (`camel_to_snake` and `is_palindrome` are not required to define non-ASCII
+  behavior; tests do not exercise non-ASCII input there.)
+- Performance optimization, CLI entry points, type-validation beyond the
+  specified `ValueError` for `truncate` (e.g., behavior on `None` input is
+  unspecified and untested).
+- Any packaging metadata (`pyproject.toml`, `setup.py`) — plain module files only.
+
+===== END PLAN =====
+
+===== backend/stringutils.py =====
+```python
+"""PLAN-ID: AOP-0002230a
+
+Pure-Python string utilities module.
+
+This module provides four dependency-free, deterministic, side-effect-free
+string helpers:
+
+- ``slugify(text)``          -- convert arbitrary text into a URL-safe slug.
+- ``camel_to_snake(text)``   -- convert camelCase/PascalCase to snake_case.
+- ``truncate(text, max_len)``-- truncate text with an ``...`` ellipsis marker.
+- ``is_palindrome(text)``    -- case-insensitive, alphanumeric-only palindrome check.
+
+Only the Python standard library is used (``re``). No I/O, no printing, no
+global mutable state, and no third-party imports.
+"""
+
+import re
+
+__all__ = ["slugify", "camel_to_snake", "truncate", "is_palindrome"]
+
+# Every run of one or more characters that are NOT ASCII lowercase letters or
+# digits is collapsed into a single hyphen by ``slugify``.
+_SLUG_SEPARATOR_RE = re.compile(r"[^a-z0-9]+")
+
+# Pass 1 of the camelCase transform: split an acronym run from the following
+# capitalised word, e.g. ``HTTPResponse`` -> ``HTTP_Response``.
+_ACRONYM_BOUNDARY_RE = re.compile(r"(.)([A-Z][a-z]+)")
+
+# Pass 2 of the camelCase transform: split a lowercase letter or digit from a
+# following uppercase letter, e.g. ``camelCase`` -> ``camel_Case`` and
+# ``version2Update`` -> ``version2_Update``.
+_LOWER_UPPER_BOUNDARY_RE = re.compile(r"([a-z0-9])([A-Z])")
+
+# Number of characters needed by the ellipsis marker used by ``truncate``.
+_ELLIPSIS = "..."
+
+
+def slugify(text):
+    """Convert arbitrary text into a URL-safe slug.
+
+    The input is lowercased, every run of one or more non-ASCII-alphanumeric
+    characters is replaced by exactly one hyphen, and leading/trailing hyphens
+    are stripped.
+
+    >>> slugify("Hello, World!")
+    'hello-world'
+    >>> slugify("!!!")
+    ''
+    """
+    return _SLUG_SEPARATOR_RE.sub("-", text.lower()).strip("-")
+
+
+def camel_to_snake(text):
+    """Convert camelCase / PascalCase identifiers to snake_case.
+
+    Boundaries are inserted between an acronym run and the following
+    capitalised word (``HTTPResponse`` -> ``http_response``) and between a
+    lowercase letter or digit and a following uppercase letter
+    (``camelCase`` -> ``camel_case``, ``version2Update`` -> ``version2_update``).
+    The result is lowercased; already lower/snake_case input is returned
+    unchanged apart from lowercasing.
+
+    >>> camel_to_snake("XMLHttpRequest")
+    'xml_http_request'
+    """
+    # Pass order matters: acronym boundaries must be resolved before the
+    # lowercase/digit -> uppercase boundaries.
+    partial = _ACRONYM_BOUNDARY_RE.sub(r"\1_\2", text)
+    partial = _LOWER_UPPER_BOUNDARY_RE.sub(r"\1_\2", partial)
+    return partial.lower()
+
+
+def truncate(text, max_len):
+    """Truncate ``text`` to at most ``max_len`` characters.
+
+    When truncation occurs the result is ``text[:max_len - 3] + '...'`` so that
+    the returned string is exactly ``max_len`` characters long and ends with
+    ``'...'``. When ``len(text) <= max_len`` the text is returned unchanged.
+
+    A ``max_len`` smaller than 4 can never fit any content plus the three
+    character ellipsis and therefore raises ``ValueError`` regardless of the
+    text content (including empty text).
+
+    >>> truncate("hello world", 8)
+    'hello...'
+    """
+    if max_len < 4:
+        raise ValueError("max_len must be at least 4 to fit the '...' ellipsis")
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - len(_ELLIPSIS)] + _ELLIPSIS
+
+
+def is_palindrome(text):
+    """Return ``True`` iff ``text`` is a case-insensitive palindrome.
+
+    All non-alphanumeric characters are ignored and the remainder is
+    lowercased before the comparison. Empty input (or input containing no
+    alphanumeric characters) yields ``""`` which is a palindrome by
+    convention, so ``True`` is returned.
+
+    >>> is_palindrome("A man, a plan, a canal: Panama!")
+    True
+    """
+    normalized = "".join(ch for ch in text.lower() if ch.isalnum())
+    return normalized == normalized[::-1]
+
+```
+
+===== backend/test_stringutils.py =====
+```python
+"""Unit tests for the pure-Python ``stringutils`` module.
+
+Plan: PLAN-ID: AOP-0002230a
+
+Run with either of::
+
+    python3 -m unittest test_stringutils -v
+    python3 -m unittest discover -v
+
+Only the standard library ``unittest`` module and the module under test are
+used. Every test method is independent: no shared mutable state and no
+ordering assumptions.
+"""
+
+import unittest
+
+from stringutils import slugify, camel_to_snake, truncate, is_palindrome
+
+
+class TestSlugify(unittest.TestCase):
+    """Tests for ``stringutils.slugify``."""
+
+    def test_basic_sentence(self):
+        """S1: punctuation and case are normalised."""
+        self.assertEqual(slugify("Hello, World!"), "hello-world")
+
+    def test_whitespace_runs_collapse(self):
+        """S2: runs of spaces/tabs collapse into a single hyphen."""
+        self.assertEqual(
+            slugify("  Multiple   spaces\tand-tabs "),
+            "multiple-spaces-and-tabs",
+        )
+
+    def test_already_slugified_is_preserved(self):
+        """S3: single hyphens are preserved, not doubled."""
+        self.assertEqual(slugify("Already-slugified"), "already-slugified")
+
+    def test_only_non_alphanumerics(self):
+        """S4: punctuation-only input becomes the empty string."""
+        self.assertEqual(slugify("!!!"), "")
+
+    def test_empty_string(self):
+        """S5: empty input yields the empty string."""
+        self.assertEqual(slugify(""), "")
+
+    def test_digits_and_mixed_case(self):
+        """S6: digits are preserved as alphanumerics."""
+        self.assertEqual(slugify("123 ABC xyz"), "123-abc-xyz")
+
+    def test_separator_run_collapses(self):
+        """S7: runs of separators collapse to one hyphen."""
+        self.assertEqual(slugify("a---b"), "a-b")
+
+    def test_underscore_is_a_separator(self):
+        """S8: underscore is non-alphanumeric for slugging purposes."""
+        self.assertEqual(slugify("UPPER_case MIX"), "upper-case-mix")
+
+
+class TestCamelToSnake(unittest.TestCase):
+    """Tests for ``stringutils.camel_to_snake``."""
+
+    def test_camel_case(self):
+        """C1: camelCase -> camel_case."""
+        self.assertEqual(camel_to_snake("camelCase"), "camel_case")
+
+    def test_pascal_case(self):
+        """C2: PascalCase -> pascal_case."""
+        self.assertEqual(camel_to_snake("PascalCase"), "pascal_case")
+
+    def test_lowercase_noop(self):
+        """C3: all-lowercase input is unchanged."""
+        self.assertEqual(camel_to_snake("simple"), "simple")
+
+    def test_snake_case_noop(self):
+        """C4: snake_case input is unchanged (underscores preserved)."""
+        self.assertEqual(camel_to_snake("snake_case"), "snake_case")
+
+    def test_acronym_then_word(self):
+        """C5: HTTPResponse -> http_response."""
+        self.assertEqual(camel_to_snake("HTTPResponse"), "http_response")
+
+    def test_multiple_acronyms(self):
+        """C6: XMLHttpRequest -> xml_http_request."""
+        self.assertEqual(camel_to_snake("XMLHttpRequest"), "xml_http_request")
+
+    def test_acronym_with_digit(self):
+        """C7: getHTTP2Response -> get_http2_response."""
+        self.assertEqual(camel_to_snake("getHTTP2Response"), "get_http2_response")
+
+    def test_digit_to_upper_boundary(self):
+        """C8: version2Update -> version2_update (digit -> upper boundary)."""
+        self.assertEqual(camel_to_snake("version2Update"), "version2_update")
+
+    def test_empty_string(self):
+        """C9: empty input yields the empty string."""
+        self.assertEqual(camel_to_snake(""), "")
+
+    def test_single_uppercase_char(self):
+        """C10: single character is simply lowercased."""
+        self.assertEqual(camel_to_snake("A"), "a")
+
+    def test_pure_acronym_run(self):
+        """C11: a pure acronym run is lowercased without underscores."""
+        self.assertEqual(camel_to_snake("ABC"), "abc")
+
+
+class TestTruncate(unittest.TestCase):
+    """Tests for ``stringutils.truncate``."""
+
+    def test_truncation_appends_ellipsis(self):
+        """T1: 'hello world' truncated to 8 chars keeps 5 chars + '...'."""
+        self.assertEqual(truncate("hello world", 8), "hello...")
+
+    def test_short_text_unchanged(self):
+        """T2: text shorter than the limit is returned unchanged."""
+        self.assertEqual(truncate("hi", 10), "hi")
+
+    def test_exact_fit_gets_no_ellipsis(self):
+        """T3: text of exactly max_len characters is unchanged, no ellipsis."""
+        result = truncate("exact", 5)
+        self.assertEqual(result, "exact")
+        self.assertFalse(result.endswith("..."))
+
+    def test_minimal_valid_truncation(self):
+        """T4: max_len == 4 is the minimum valid truncation length."""
+        self.assertEqual(truncate("abcdef", 4), "a...")
+
+    def test_text_matching_limit_unchanged(self):
+        """T5: len(text) == max_len returns text unchanged."""
+        self.assertEqual(truncate("abcdef", 6), "abcdef")
+
+    def test_empty_text_with_valid_limit(self):
+        """T6: empty text with a valid limit is returned unchanged."""
+        self.assertEqual(truncate("", 4), "")
+
+    def test_limit_three_raises(self):
+        """T7: max_len == 3 raises ValueError."""
+        with self.assertRaises(ValueError):
+            truncate("abcdef", 3)
+
+    def test_limit_zero_raises(self):
+        """T8: max_len == 0 raises ValueError."""
+        with self.assertRaises(ValueError):
+            truncate("abcdef", 0)
+
+    def test_negative_limit_raises(self):
+        """T9: negative max_len raises ValueError."""
+        with self.assertRaises(ValueError):
+            truncate("abcdef", -1)
+
+    def test_invalid_limit_with_empty_text_raises(self):
+        """T10: the limit is validated even when text is empty."""
+        with self.assertRaises(ValueError):
+            truncate("", 3)
+
+    def test_truncation_result_invariants(self):
+        """T11: truncated result has length max_len and ends with '...'."""
+        result = truncate("hello world", 8)
+        self.assertEqual(len(result), 8)
+        self.assertTrue(result.endswith("..."))
+
+    def test_custom_truncation_invariants(self):
+        """T12: custom case keeps exact length and trailing ellipsis."""
+        result = truncate("abcdefghij", 9)
+        self.assertEqual(result, "abcdef...")
+        self.assertEqual(len(result), 9)
+        self.assertTrue(result.endswith("..."))
+
+
+class TestIsPalindrome(unittest.TestCase):
+    """Tests for ``stringutils.is_palindrome``."""
+
+    def test_simple_palindrome(self):
+        """P1: racecar is a palindrome."""
+        self.assertTrue(is_palindrome("racecar"))
+
+    def test_case_insensitive(self):
+        """P2: RaceCar is a palindrome due to case folding."""
+        self.assertTrue(is_palindrome("RaceCar"))
+
+    def test_sentence_palindrome(self):
+        """P3: punctuation and spacing are ignored."""
+        self.assertTrue(is_palindrome("A man, a plan, a canal: Panama!"))
+
+    def test_quoted_palindrome(self):
+        """P4: apostrophes and spaces are ignored."""
+        self.assertTrue(is_palindrome("No 'x' in Nixon"))
+
+    def test_non_palindrome(self):
+        """P5: hello is not a palindrome."""
+        self.assertFalse(is_palindrome("hello"))
+
+    def test_non_palindrome_with_spaces(self):
+        """P6: race a car is not a palindrome once normalised."""
+        self.assertFalse(is_palindrome("race a car"))
+
+    def test_empty_string(self):
+        """P7: empty input is a palindrome by convention."""
+        self.assertTrue(is_palindrome(""))
+
+    def test_no_alphanumerics(self):
+        """P8: punctuation-only input normalises to '' -> True."""
+        self.assertTrue(is_palindrome("!!! ,,,"))
+
+    def test_numeric_palindrome(self):
+        """P9: digits count as alphanumeric; 12321 is a palindrome."""
+        self.assertTrue(is_palindrome("12321"))
+
+    def test_numeric_non_palindrome(self):
+        """P10: 12345 is not a palindrome."""
+        self.assertFalse(is_palindrome("12345"))
+
+    def test_even_length_non_palindrome(self):
+        """P11: even-length non-palindrome 'ab' returns False."""
+        self.assertFalse(is_palindrome("ab"))
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+```
+
+===== frontend/index.html =====
+```html
+<!DOCTYPE html>
+<!-- PLAN-ID: AOP-0002230a -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>String Utilities &mdash; Interactive Demo</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1f2328;
+    --muted: #57606a;
+    --line: #d8dee4;
+    --accent: #2f5da8;
+    --accent-ink: #ffffff;
+    --ok-bg: #f2f8f4;
+    --ok-line: #bfdccb;
+    --err-bg: #fdf2f2;
+    --err-line: #e6b1b1;
+    --code-bg: #f2f4f7;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 20px 48px;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+
+  header p.sub {
+    margin: 0 0 24px;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 24px;
+  }
+
+  fieldset {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 0 0 20px;
+    padding: 12px 16px 14px;
+  }
+
+  legend {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    padding: 0 6px;
+  }
+
+  label { font-weight: 600; font-size: 0.92rem; }
+
+  .field { margin-bottom: 18px; }
+  .field:last-of-type { margin-bottom: 0; }
+
+  .hint {
+    display: block;
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  input[type="text"],
+  input[type="number"] {
+    width: 100%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 9px 11px;
+    margin-top: 6px;
+  }
+
+  input[type="number"] { max-width: 140px; }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+
+  .radios { display: grid; gap: 8px; }
+
+  .radios label {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    font-weight: 400;
+    font-size: 0.94rem;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .radios label:hover { background: var(--code-bg); }
+
+  .radios input[type="radio"] { margin: 0; accent-color: var(--accent); }
+
+  .radios code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88rem;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .radios .desc { color: var(--muted); font-size: 0.82rem; }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 22px 0 20px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 9px 22px;
+    cursor: pointer;
+  }
+
+  button:hover { background: #274d8d; }
+  button:focus-visible { outline: 2px solid #14315c; outline-offset: 2px; }
+
+  .examples { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .examples button {
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 5px 10px;
+  }
+
+  .examples button:hover { background: var(--code-bg); }
+
+  .out-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  #output {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--line);
+    border-radius: 8px;
+    background: var(--code-bg);
+    padding: 14px 16px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    min-height: 62px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  #output.is-error {
+    background: var(--err-bg);
+    border-color: var(--err-line);
+    border-left-color: #c94f4f;
+    color: #8a2b2b;
+  }
+
+  #output.is-ok {
+    background: var(--ok-bg);
+    border-color: var(--ok-line);
+    border-left-color: #3f8a5f;
+  }
+
+  #output .call { color: var(--muted); font-size: 0.85rem; display: block; margin-bottom: 6px; }
+  #output .value { font-weight: 600; }
+  #output.is-error .value { color: #8a2b2b; }
+
+  footer {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>String Utilities &mdash; Interactive Demo</h1>
+    <p class="sub">
+      Plain-JavaScript re-implementation of the planned pure-Python module
+      <code>stringutils.py</code>: <code>slugify</code>, <code>camel_to_snake</code>,
+      <code>truncate</code>, <code>is_palindrome</code>.
+    </p>
+  </header>
+
+  <main class="card">
+    <div class="field">
+      <label for="text-input">Text input</label>
+      <span class="hint">The string passed to the selected function (empty string is allowed).</span>
+      <input type="text" id="text-input" value="Hello, World!" autocomplete="off" spellcheck="false">
+    </div>
+
+    <fieldset>
+      <legend>Function</legend>
+      <div class="radios" id="fn-picker">
+        <label>
+          <input type="radio" name="fn" value="slugify" checked>
+          <code>slugify(text)</code>
+          <span class="desc">lowercase, runs of non-alphanumerics &rarr; one hyphen, strip edge hyphens</span>
+        </label>
+        <label>
+          <input type="radio" name="fn" value="camel_to_snake">
+          <code>camel_to_snake(text)</code>
+          <span class="desc">camelCase / PascalCase / acronyms &rarr; snake_case</span>
+        </label>
+        <label>
+          <input type="radio" name="fn" value="truncate">
+          <code>truncate(text, max_len)</code>
+          <span class="desc">cut to max_len and append &ldquo;&hellip;&rdquo;; requires max_len &ge; 4</span>
+        </label>
+        <label>
+          <input type="radio" name="fn" value="is_palindrome">
+          <code>is_palindrome(text)</code>
+          <span class="desc">case-insensitive, ignores non-alphanumerics</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <div class="field" id="maxlen-field">
+      <label for="max-len">max_len</label>
+      <span class="hint">Only used by <code>truncate</code>. Values below 4 raise a ValueError-equivalent error.</span>
+      <input type="number" id="max-len" value="8" step="1" min="-10" max="200">
+    </div>
+
+    <div class="actions">
+      <button type="button" id="run-btn">Run</button>
+      <div class="examples">
+        <button type="button" data-example="Hello, World!">Hello, World!</button>
+        <button type="button" data-example="XMLHttpRequest">XMLHttpRequest</button>
+        <button type="button" data-example="A man, a plan, a canal: Panama!">Panama</button>
+        <button type="button" data-example="!!! ,,,">punctuation only</button>
+      </div>
+    </div>
+
+    <div class="out-label">Output</div>
+    <pre id="output" role="status" aria-live="polite">Press &ldquo;Run&rdquo; to evaluate a function.</pre>
+  </main>
+
+  <footer>
+    Single-file demo &mdash; no frameworks, no external assets. Error paths are shown inline.
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * Pure function implementations (mirror of the planned Python module)  *
+ * ------------------------------------------------------------------ */
+
+/** ValueError-equivalent error type used by truncate(). */
+function ValueError(message) {
+  this.name = "ValueError";
+  this.message = message;
+}
+ValueError.prototype = Object.create(Error.prototype);
+ValueError.prototype.constructor = ValueError;
+
+/**
+ * slugify(text) -> string
+ * Lowercase the input, replace every run of one or more characters that are
+ * not ASCII alphanumeric ([a-z0-9] after lowercasing) with exactly one "-",
+ * then strip leading and trailing "-".
+ * Equivalent to: re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
+ */
+function slugify(text) {
+  return String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * camel_to_snake(text) -> string
+ * Canonical two-pass transform:
+ *   1. insert "_" between any char and an uppercase letter that starts a
+ *      lowercase run (acronym -> word boundary, e.g. HTTPResponse),
+ *   2. insert "_" between a lowercase letter/digit and an uppercase letter
+ *      (camelCase, version2Update),
+ * then lowercase the result.
+ */
+function camel_to_snake(text) {
+  return String(text)
+    .replace(/(.)([A-Z][a-z]+)/g, "$1_$2")
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .toLowerCase();
+}
+
+/**
+ * truncate(text, max_len) -> string
+ * Raises ValueError (via throw) when max_len < 4. Returns text unchanged when
+ * len(text) <= max_len; otherwise text.slice(0, max_len - 3) + "...", whose
+ * length is exactly max_len and which always ends with "...".
+ */
+function truncate(text, max_len) {
+  text = String(text);
+  if (max_len < 4) {
+    throw new ValueError(
+      "max_len must be >= 4 (ellipsis is 3 chars), got " + String(max_len)
+    );
+  }
+  if (text.length <= max_len) {
+    return text;
+  }
+  return text.slice(0, max_len - 3) + "...";
+}
+
+/**
+ * is_palindrome(text) -> boolean
+ * Keep only alphanumeric characters, lowercase them, and compare with the
+ * reversed string. Empty / non-alphanumeric-only input normalizes to "" and
+ * is therefore a palindrome (true).
+ */
+function is_palindrome(text) {
+  var normalized = String(text)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]/gu, "");
+  return normalized === normalized.split("").reverse().join("");
+}
+
+/* ------------------------------------------------------------------ *
+ * Demo wiring                                                         *
+ * ------------------------------------------------------------------ */
+
+(function () {
+  var textInput = document.getElementById("text-input");
+  var maxLenInput = document.getElementById("max-len");
+  var runBtn = document.getElementById("run-btn");
+  var output = document.getElementById("output");
+  var picker = document.getElementById("fn-picker");
+
+  function selectedFunction() {
+    var checked = picker.querySelector('input[name="fn"]:checked');
+    return checked ? checked.value : "slugify";
+  }
+
+  function quote(value) {
+    if (typeof value === "boolean") {
+      return value ? "True" : "False";
+    }
+    return JSON.stringify(value);
+  }
+
+  function showOk(callText, result) {
+    output.className = "is-ok";
+    output.textContent = "";
+    var call = document.createElement("span");
+    call.className = "call";
+    call.textContent = callText;
+    var value = document.createElement("span");
+    value.className = "value";
+    value.textContent = quote(result);
+    output.appendChild(call);
+    output.appendChild(value);
+  }
+
+  function showError(callText, message) {
+    output.className = "is-error";
+    output.textContent = "";
+    var call = document.createElement("span");
+    call.className = "call";
+    call.textContent = callText;
+    var value = document.createElement("span");
+    value.className = "value";
+    value.textContent = message;
+    output.appendChild(call);
+    output.appendChild(value);
+  }
+
+  function run() {
+    var fnName = selectedFunction();
+    var text = textInput.value;
+
+    if (fnName === "truncate") {
+      var raw = maxLenInput.value.trim();
+      var maxLen = raw === "" ? NaN : Number(raw);
+
+      var callText = "truncate(" + JSON.stringify(text) + ", " +
+        (raw === "" ? "<empty>" : String(maxLen)) + ")";
+
+      if (raw === "" || !isFinite(maxLen) || Math.floor(maxLen) !== maxLen) {
+        showError(callText,
+          "InputError: max_len must be an integer (got \"" + raw + "\").");
+        return;
+      }
+
+      try {
+        showOk(callText, truncate(text, maxLen));
+      } catch (err) {
+        if (err && err.name === "ValueError") {
+          showError(callText, "ValueError: " + err.message);
+        } else {
+          throw err;
+        }
+      }
+      return;
+    }
+
+    var impl = { slugify: slugify, camel_to_snake: camel_to_snake,
+                 is_palindrome: is_palindrome }[fnName];
+    showOk(fnName + "(" + JSON.stringify(text) + ")", impl(text));
+  }
+
+  runBtn.addEventListener("click", run);
+
+  textInput.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      run();
+    }
+  });
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll(".examples button"),
+    function (btn) {
+      btn.addEventListener("click", function () {
+        textInput.value = btn.getAttribute("data-example");
+        textInput.focus();
+        run();
+      });
+    }
+  );
+})();
+</script>
+</body>
+</html>
+
+```
+
+Write a file named exactly REVIEW.md assessing:
+1. Plan compliance: does the implementation match every planned function/rule?
+2. Test quality: do the tests actually pin the planned behavior (edge cases, error path)?
+3. Frontend fidelity: does the JS mirror the planned semantics (truncate guard, palindrome ignore-rules)?
+4. Any bug, security note, or spec deviation.
+
+The file MUST end with exactly one line in this format:
+VERDICT: approve|request_changes — <one-sentence justification>
+
+The first line of REVIEW.md must be exactly:
+PLAN-ID: AOP-0002230a
+
+Do not create any other files. When done, reply with just the VERDICT line.

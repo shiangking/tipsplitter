@@ -1,0 +1,332 @@
+{
+  "generated_at": "2026-10-22T14:51:57+00:00",
+  "method": "2 rounds per profile, ground-truth verified, throwaway conversations (deleted after)",
+  "results": [
+    {
+      "round": "code-image",
+      "profile": "glm5.3",
+      "conversation_id": "e754019c-6405-475b-9036-b24049db2480",
+      "ground_truth": "VP0F4A",
+      "reply_excerpt": "I received your image, but the currently selected model (openai/x-test-1) does not support image understanding. Please s",
+      "passed": false,
+      "status": "finished",
+      "usage": {
+        "default": {
+          "model_name": "openai/x-test-1",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-1",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        },
+        "condenser": {
+          "model_name": "openai/x-test-1",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-1",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        }
+      },
+      "evidence_image": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/state/vision-probe/probe-code-VP0F4A.png"
+    },
+    {
+      "round": "screenshot-analysis",
+      "profile": "glm5.3",
+      "conversation_id": "0c0d1ea7-1133-4604-988d-c50eff170a09",
+      "ground_truth": {
+        "primary_label": "Ba46f0Now",
+        "button_count": 3
+      },
+      "reply_excerpt": "I received your image, but the currently selected model (openai/x-test-1) does not support image understanding. Please switch to a multimodal model to analyze the image.",
+      "passed": false,
+      "status": "finished",
+      "usage": {
+        "default": {
+          "model_name": "openai/x-test-1",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-1",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        },
+        "condenser": {
+          "model_name": "openai/x-test-1",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-1",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        }
+      },
+      "evidence_image": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/state/vision-probe/probe-ui-ba46f0now-3.png"
+    },
+    {
+      "round": "code-image",
+      "profile": "deepseekv4.1",
+      "conversation_id": "e9918760-2572-4e65-9814-da1c9cc3c564",
+      "ground_truth": "VP70DF",
+      "reply_excerpt": "I received your image, but the currently selected model (openai/x-test-2) does not support image understanding. Please s",
+      "passed": false,
+      "status": "finished",
+      "usage": {
+        "default": {
+          "model_name": "openai/x-test-2",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-2",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        },
+        "condenser": {
+          "model_name": "openai/x-test-2",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-2",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        }
+      },
+      "evidence_image": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/state/vision-probe/probe-code-VP70DF.png"
+    },
+    {
+      "round": "screenshot-analysis",
+      "profile": "deepseekv4.1",
+      "conversation_id": "84c7ff40-bae8-49d5-af61-82926755edf2",
+      "ground_truth": {
+        "primary_label": "Ca934dNow",
+        "button_count": 3
+      },
+      "reply_excerpt": "I received your image, but the currently selected model (openai/x-test-2) does not support image understanding. Please switch to a multimodal model to analyze the image.",
+      "passed": false,
+      "status": "finished",
+      "usage": {
+        "default": {
+          "model_name": "openai/x-test-2",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-2",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        },
+        "condenser": {
+          "model_name": "openai/x-test-2",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-2",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        }
+      },
+      "evidence_image": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/state/vision-probe/probe-ui-ca934dnow-3.png"
+    },
+    {
+      "round": "code-image",
+      "profile": "qwen3.8flash",
+      "conversation_id": "afcb155a-2260-4fb0-ad32-f99c2ec89dce",
+      "ground_truth": "VPD16B",
+      "reply_excerpt": "I received your image, but the currently selected model (openai/x-test-3) does not support image understanding. Please s",
+      "passed": false,
+      "status": "finished",
+      "usage": {
+        "default": {
+          "model_name": "openai/x-test-3",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-3",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        },
+        "condenser": {
+          "model_name": "openai/x-test-3",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-3",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        }
+      },
+      "evidence_image": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/state/vision-probe/probe-code-VPD16B.png"
+    },
+    {
+      "round": "screenshot-analysis",
+      "profile": "qwen3.8flash",
+      "conversation_id": "903acc87-dfc6-44fb-a7ee-39df4d3a3adf",
+      "ground_truth": {
+        "primary_label": "6d5e80Now",
+        "button_count": 3
+      },
+      "reply_excerpt": "I received your image, but the currently selected model (openai/x-test-3) does not support image understanding. Please switch to a multimodal model to analyze the image.",
+      "passed": false,
+      "status": "finished",
+      "usage": {
+        "default": {
+          "model_name": "openai/x-test-3",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-3",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        },
+        "condenser": {
+          "model_name": "openai/x-test-3",
+          "accumulated_cost": 0.0,
+          "max_budget_per_task": null,
+          "accumulated_token_usage": {
+            "model": "openai/x-test-3",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        }
+      },
+      "evidence_image": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/state/vision-probe/probe-ui-6d5e80now-3.png"
+    }
+  ],
+  "verdict": {
+    "glm5.3": {
+      "code_image": false,
+      "screenshot_analysis": false,
+      "vision_capable": false
+    },
+    "deepseekv4.1": {
+      "code_image": false,
+      "screenshot_analysis": false,
+      "vision_capable": false
+    },
+    "qwen3.8flash": {
+      "code_image": false,
+      "screenshot_analysis": false,
+      "vision_capable": false
+    }
+  }
+}

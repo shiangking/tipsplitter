@@ -1,0 +1,14 @@
+resume: design stage already complete, skipping
+resume: plan stage already complete, skipping
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    rc = compile_and_run('proj-1792690256-tipsplitter', resume=True)
+  File "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/factory.py", line 379, in compile_and_run
+    build = stage_build(project, plan_rec)
+  File "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/factory.py", line 218, in stage_build
+    wts[wid] = create_worktree(pdir, wid)
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/parallel.py", line 72, in create_worktree
+    raise RuntimeError(f"worktree add failed: {out}")
+RuntimeError: worktree add failed: Preparing worktree (checking out 'worker/worker-a')
+fatal: 'worker/worker-a' is already used by worktree at '/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792690256-tipsplitter-worktrees/worker-a-attempt01'

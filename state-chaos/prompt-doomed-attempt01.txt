@@ -1,0 +1,7 @@
+Create a file named exactly CONTRACT.md in your current workspace containing two lines:
+CONTRACT-ID: AOP-cdaec609
+I acknowledge the orchestration contract.
+
+CHAOS-DO-NOT-CREATE-FILES
+
+When done, reply with just: CONTRACT-COMPLETE
