@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<!-- PLAN-ID: AOP-0002230a -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>String Utilities &mdash; Interactive Demo</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1f2328;
+    --muted: #57606a;
+    --line: #d8dee4;
+    --accent: #2f5da8;
+    --accent-ink: #ffffff;
+    --ok-bg: #f2f8f4;
+    --ok-line: #bfdccb;
+    --err-bg: #fdf2f2;
+    --err-line: #e6b1b1;
+    --code-bg: #f2f4f7;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 20px 48px;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+
+  header p.sub {
+    margin: 0 0 24px;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 24px;
+  }
+
+  fieldset {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 0 0 20px;
+    padding: 12px 16px 14px;
+  }
+
+  legend {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    padding: 0 6px;
+  }
+
+  label { font-weight: 600; font-size: 0.92rem; }
+
+  .field { margin-bottom: 18px; }
+  .field:last-of-type { margin-bottom: 0; }
+
+  .hint {
+    display: block;
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  input[type="text"],
+  input[type="number"] {
+    width: 100%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 9px 11px;
+    margin-top: 6px;
+  }
+
+  input[type="number"] { max-width: 140px; }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+
+  .radios { display: grid; gap: 8px; }
+
+  .radios label {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    font-weight: 400;
+    font-size: 0.94rem;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .radios label:hover { background: var(--code-bg); }
+
+  .radios input[type="radio"] { margin: 0; accent-color: var(--accent); }
+
+  .radios code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88rem;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .radios .desc { color: var(--muted); font-size: 0.82rem; }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 22px 0 20px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 9px 22px;
+    cursor: pointer;
+  }
+
+  button:hover { background: #274d8d; }
+  button:focus-visible { outline: 2px solid #14315c; outline-offset: 2px; }
+
+  .examples { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .examples button {
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 5px 10px;
+  }
+
+  .examples button:hover { background: var(--code-bg); }
+
+  .out-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  #output {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--line);
+    border-radius: 8px;
+    background: var(--code-bg);
+    padding: 14px 16px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    min-height: 62px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  #output.is-error {
+    background: var(--err-bg);
+    border-color: var(--err-line);
+    border-left-color: #c94f4f;
+    color: #8a2b2b;
+  }
+
+  #output.is-ok {
+    background: var(--ok-bg);
+    border-color: var(--ok-line);
+    border-left-color: #3f8a5f;
+  }
+
+  #output .call { color: var(--muted); font-size: 0.85rem; display: block; margin-bottom: 6px; }
+  #output .value { font-weight: 600; }
+  #output.is-error .value { color: #8a2b2b; }
+
+  footer {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>String Utilities &mdash; Interactive Demo</h1>
+    <p class="sub">
+      Plain-JavaScript re-implementation of the planned pure-Python module
+      <code>stringutils.py</code>: <code>slugify</code>, <code>camel_to_snake</code>,
+      <code>truncate</code>, <code>is_palindrome</code>.
+    </p>
+  </header>
+
+  <main class="card">
+    <div class="field">
+      <label for="text-input">Text input</label>
+      <span class="hint">The string passed to the selected function (empty string is allowed).</span>
+      <input type="text" id="text-input" value="Hello, World!" autocomplete="off" spellcheck="false">
+    </div>
+
+    <fieldset>
+      <legend>Function</legend>
+      <div class="radios" id="fn-picker">
+        <label>
+          <input type="radio" name="fn" value="slugify" checked>
+          <code>slugify(text)</code>
+          <span class="desc">lowercase, runs of non-alphanumerics &rarr; one hyphen, strip edge hyphens</span>
+        </label>
+        <label>
+          <input type="radio" name="fn" value="camel_to_snake">
+          <code>camel_to_snake(text)</code>
+          <span class="desc">camelCase / PascalCase / acronyms &rarr; snake_case</span>
+        </label>
+        <label>
+          <input type="radio" name="fn" value="truncate">
+          <code>truncate(text, max_len)</code>
+          <span class="desc">cut to max_len and append &ldquo;&hellip;&rdquo;; requires max_len &ge; 4</span>
+        </label>
+        <label>
+          <input type="radio" name="fn" value="is_palindrome">
+          <code>is_palindrome(text)</code>
+          <span class="desc">case-insensitive, ignores non-alphanumerics</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <div class="field" id="maxlen-field">
+      <label for="max-len">max_len</label>
+      <span class="hint">Only used by <code>truncate</code>. Values below 4 raise a ValueError-equivalent error.</span>
+      <input type="number" id="max-len" value="8" step="1" min="-10" max="200">
+    </div>
+
+    <div class="actions">
+      <button type="button" id="run-btn">Run</button>
+      <div class="examples">
+        <button type="button" data-example="Hello, World!">Hello, World!</button>
+        <button type="button" data-example="XMLHttpRequest">XMLHttpRequest</button>
+        <button type="button" data-example="A man, a plan, a canal: Panama!">Panama</button>
+        <button type="button" data-example="!!! ,,,">punctuation only</button>
+      </div>
+    </div>
+
+    <div class="out-label">Output</div>
+    <pre id="output" role="status" aria-live="polite">Press &ldquo;Run&rdquo; to evaluate a function.</pre>
+  </main>
+
+  <footer>
+    Single-file demo &mdash; no frameworks, no external assets. Error paths are shown inline.
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * Pure function implementations (mirror of the planned Python module)  *
+ * ------------------------------------------------------------------ */
+
+/** ValueError-equivalent error type used by truncate(). */
+function ValueError(message) {
+  this.name = "ValueError";
+  this.message = message;
+}
+ValueError.prototype = Object.create(Error.prototype);
+ValueError.prototype.constructor = ValueError;
+
+/**
+ * slugify(text) -> string
+ * Lowercase the input, replace every run of one or more characters that are
+ * not ASCII alphanumeric ([a-z0-9] after lowercasing) with exactly one "-",
+ * then strip leading and trailing "-".
+ * Equivalent to: re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
+ */
+function slugify(text) {
+  return String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * camel_to_snake(text) -> string
+ * Canonical two-pass transform:
+ *   1. insert "_" between any char and an uppercase letter that starts a
+ *      lowercase run (acronym -> word boundary, e.g. HTTPResponse),
+ *   2. insert "_" between a lowercase letter/digit and an uppercase letter
+ *      (camelCase, version2Update),
+ * then lowercase the result.
+ */
+function camel_to_snake(text) {
+  return String(text)
+    .replace(/(.)([A-Z][a-z]+)/g, "$1_$2")
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .toLowerCase();
+}
+
+/**
+ * truncate(text, max_len) -> string
+ * Raises ValueError (via throw) when max_len < 4. Returns text unchanged when
+ * len(text) <= max_len; otherwise text.slice(0, max_len - 3) + "...", whose
+ * length is exactly max_len and which always ends with "...".
+ */
+function truncate(text, max_len) {
+  text = String(text);
+  if (max_len < 4) {
+    throw new ValueError(
+      "max_len must be >= 4 (ellipsis is 3 chars), got " + String(max_len)
+    );
+  }
+  if (text.length <= max_len) {
+    return text;
+  }
+  return text.slice(0, max_len - 3) + "...";
+}
+
+/**
+ * is_palindrome(text) -> boolean
+ * Keep only alphanumeric characters, lowercase them, and compare with the
+ * reversed string. Empty / non-alphanumeric-only input normalizes to "" and
+ * is therefore a palindrome (true).
+ */
+function is_palindrome(text) {
+  var normalized = String(text)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]/gu, "");
+  return normalized === normalized.split("").reverse().join("");
+}
+
+/* ------------------------------------------------------------------ *
+ * Demo wiring                                                         *
+ * ------------------------------------------------------------------ */
+
+(function () {
+  var textInput = document.getElementById("text-input");
+  var maxLenInput = document.getElementById("max-len");
+  var runBtn = document.getElementById("run-btn");
+  var output = document.getElementById("output");
+  var picker = document.getElementById("fn-picker");
+
+  function selectedFunction() {
+    var checked = picker.querySelector('input[name="fn"]:checked');
+    return checked ? checked.value : "slugify";
+  }
+
+  function quote(value) {
+    if (typeof value === "boolean") {
+      return value ? "True" : "False";
+    }
+    return JSON.stringify(value);
+  }
+
+  function showOk(callText, result) {
+    output.className = "is-ok";
+    output.textContent = "";
+    var call = document.createElement("span");
+    call.className = "call";
+    call.textContent = callText;
+    var value = document.createElement("span");
+    value.className = "value";
+    value.textContent = quote(result);
+    output.appendChild(call);
+    output.appendChild(value);
+  }
+
+  function showError(callText, message) {
+    output.className = "is-error";
+    output.textContent = "";
+    var call = document.createElement("span");
+    call.className = "call";
+    call.textContent = callText;
+    var value = document.createElement("span");
+    value.className = "value";
+    value.textContent = message;
+    output.appendChild(call);
+    output.appendChild(value);
+  }
+
+  function run() {
+    var fnName = selectedFunction();
+    var text = textInput.value;
+
+    if (fnName === "truncate") {
+      var raw = maxLenInput.value.trim();
+      var maxLen = raw === "" ? NaN : Number(raw);
+
+      var callText = "truncate(" + JSON.stringify(text) + ", " +
+        (raw === "" ? "<empty>" : String(maxLen)) + ")";
+
+      if (raw === "" || !isFinite(maxLen) || Math.floor(maxLen) !== maxLen) {
+        showError(callText,
+          "InputError: max_len must be an integer (got \"" + raw + "\").");
+        return;
+      }
+
+      try {
+        showOk(callText, truncate(text, maxLen));
+      } catch (err) {
+        if (err && err.name === "ValueError") {
+          showError(callText, "ValueError: " + err.message);
+        } else {
+          throw err;
+        }
+      }
+      return;
+    }
+
+    var impl = { slugify: slugify, camel_to_snake: camel_to_snake,
+                 is_palindrome: is_palindrome }[fnName];
+    showOk(fnName + "(" + JSON.stringify(text) + ")", impl(text));
+  }
+
+  runBtn.addEventListener("click", run);
+
+  textInput.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      run();
+    }
+  });
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll(".examples button"),
+    function (btn) {
+      btn.addEventListener("click", function () {
+        textInput.value = btn.getAttribute("data-example");
+        textInput.focus();
+        run();
+      });
+    }
+  );
+})();
+</script>
+</body>
+</html>

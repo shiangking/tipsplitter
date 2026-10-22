@@ -1,0 +1,21 @@
+{
+ "task_id": "interruptdemo",
+ "kind": "static",
+ "passed": true,
+ "checks": [
+  {
+   "check": "contains:INTERRUPT-DEMO: AOP-ee30b882",
+   "ok": true,
+   "detail": "'INTERRUPT-DEMO: AOP-ee30b882' in NOTES.md"
+  },
+  {
+   "check": "contains:three observations",
+   "ok": true,
+   "detail": "'three observations' in NOTES.md"
+  }
+ ],
+ "command": null,
+ "exit_code": null,
+ "stdout_tail": "",
+ "stderr_tail": ""
+}

@@ -1,0 +1,1 @@
+{"type": "static", "file": "index.html", "must_contain": ["</html>", "<script", "slugify", "camel_to_snake", "truncate", "is_palindrome"]}

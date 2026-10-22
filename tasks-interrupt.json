@@ -1,0 +1,32 @@
+{
+  "settings": {
+    "agent_profile_name": "default",
+    "max_iterations": 40,
+    "stuck_detection": true,
+    "poll_interval_s": 2,
+    "default_timeout_s": 300,
+    "default_max_retries": 0
+  },
+  "tasks": [
+    {
+      "id": "interruptdemo",
+      "title": "Interrupt-recovery demo: small report task that can be interrupted",
+      "model_profile": "glm5.3",
+      "depends_on": [],
+      "expected_artifacts": [
+        "NOTES.md"
+      ],
+      "timeout_s": 240,
+      "max_retries": 0,
+      "verify": {
+        "type": "static",
+        "file": "NOTES.md",
+        "must_contain": [
+          "INTERRUPT-DEMO: AOP-{orchestration_id}",
+          "three observations"
+        ]
+      },
+      "prompt": "Create a file named exactly NOTES.md in your current workspace. It must start with the line:\nINTERRUPT-DEMO: AOP-{orchestration_id}\n\nThen write a short section titled 'three observations' containing exactly three numbered observations about multi-agent orchestration (one sentence each). When done, reply with just: NOTES-COMPLETE"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+resume: design stage already complete, skipping
+resume: plan stage already complete, skipping
+2026-10-22T17:47:37.697Z [INFO] [worker-a] launched deepseekv4.1 conversation fd14ba0e ws=/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792690256-tipsplitter-worktrees/worker-a-attempt01
+2026-10-22T17:47:43.114Z [INFO] [worker-b] launched deepseekv4.1 conversation 55993ee6 ws=/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792690256-tipsplitter-worktrees/worker-b-attempt01
+{
+ "project": "proj-1792690256-tipsplitter",
+ "stage": "verify",
+ "status": "failed",
+ "detail": {
+  "ok": false,
+  "reason": "worker gates failed"
+ }
+}
+resume rc: 5

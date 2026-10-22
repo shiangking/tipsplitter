@@ -1,0 +1,16 @@
+{
+ "project_id": "proj-1792685561-tipsplitter",
+ "dir": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792685561-tipsplitter",
+ "template": "clean-landing-v1"
+}
+2026-10-22T16:12:46.681Z [INFO] [plan] launched glm5.3 conversation cf97df53 ws=/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/projects/proj-1792685561-tipsplitter/agent-workspaces/plan
+{
+ "project": "proj-1792685561-tipsplitter",
+ "stage": "verify",
+ "status": "failed",
+ "detail": {
+  "ok": false,
+  "reason": "worker gates failed"
+ }
+}
+factory rc: 5

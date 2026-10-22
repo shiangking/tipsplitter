@@ -1,0 +1,8 @@
+2026-10-22T15:28:24.470Z [INFO] [format-worker] launched deepseekv4.1 conversation 8f4ecec5 ws=/tmp/e4-demo/project-worktrees/format-worker-attempt01
+2026-10-22T15:28:24.491Z [INFO] [stats-worker] launched deepseekv4.1 conversation 9fe813cb ws=/tmp/e4-demo/project-worktrees/stats-worker-attempt01
+parallel phase done in 34s
+Traceback (most recent call last):
+  File "/tmp/e4_demo.py", line 55, in <module>
+    print(f"  {r['id']}: status={r['status']} conv={r.get('conversation_id','')[:8]} "
+               ~^^^^^^
+KeyError: 'id'

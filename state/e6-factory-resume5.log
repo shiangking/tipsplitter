@@ -1,0 +1,10 @@
+resume: design stage already complete, skipping
+resume: plan stage already complete, skipping
+resume: build stage already complete, skipping
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    rc = compile_and_run('proj-1792690256-tipsplitter', resume=True)
+  File "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/factory.py", line 404, in compile_and_run
+    for k, v in ev["worktrees"].items()}
+                ~~^^^^^^^^^^^^^
+KeyError: 'worktrees'

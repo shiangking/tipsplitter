@@ -1,0 +1,1 @@
+{"type": "static", "file": "late.txt", "must_contain": ["TOO-LATE"]}

@@ -1,0 +1,68 @@
+2026-10-22T15:30:17.093Z [INFO] [repair-env_handling-c1] launched deepseekv4.1 conversation 2b7fd9e1 ws=/tmp/e4-demo/ws-repair/repair-env_handling-c1
+2026-10-22T15:33:44.210Z [INFO] [repair-dom_check:desktop-c1] launched qwen3.8flash conversation 6cd15223 ws=/tmp/e4-demo/ws-repair/repair-dom_check-desktop-c1
+2026-10-22T15:37:32.949Z [INFO] [repair-dom_check:tablet-c1] launched qwen3.8flash conversation 782a7922 ws=/tmp/e4-demo/ws-repair/repair-dom_check-tablet-c1
+2026-10-22T15:42:06.909Z [INFO] [repair-dom_check:mobile-c1] launched qwen3.8flash conversation bbf090a6 ws=/tmp/e4-demo/ws-repair/repair-dom_check-mobile-c1
+{
+ "outcome": "unavailable_components",
+ "cycles": 1,
+ "final": {
+  "overall": "failed",
+  "families": {
+   "security": {
+    "passed": 3,
+    "failed": 0,
+    "unavailable": 1,
+    "blocked": 0
+   },
+   "browser": {
+    "passed": 4,
+    "failed": 0,
+    "unavailable": 0,
+    "blocked": 0
+   }
+  },
+  "gates": [
+   {
+    "gate": "secret_scan",
+    "family": "security",
+    "status": "passed"
+   },
+   {
+    "gate": "sast",
+    "family": "security",
+    "status": "passed"
+   },
+   {
+    "gate": "dep_audit",
+    "family": "security",
+    "status": "unavailable"
+   },
+   {
+    "gate": "env_handling",
+    "family": "security",
+    "status": "passed"
+   },
+   {
+    "gate": "responsive_screenshots",
+    "family": "browser",
+    "status": "passed"
+   },
+   {
+    "gate": "dom_check:desktop",
+    "family": "browser",
+    "status": "passed"
+   },
+   {
+    "gate": "dom_check:tablet",
+    "family": "browser",
+    "status": "passed"
+   },
+   {
+    "gate": "dom_check:mobile",
+    "family": "browser",
+    "status": "passed"
+   }
+  ]
+ }
+}
+E4-REPAIR DONE

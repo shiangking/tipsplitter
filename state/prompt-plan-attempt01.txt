@@ -1,0 +1,17 @@
+You are the PLANNING agent in a multi-agent pipeline. Work only inside your current workspace directory.
+
+Create a file named exactly PLAN.md containing an implementation plan for a small, pure-Python string-utilities module. Requirements the plan must cover:
+
+1. A module named stringutils.py exposing these pure functions:
+   - slugify(text: str) -> str  (lowercase, non-alphanumerics collapsed to single hyphen, stripped hyphens at both ends)
+   - camel_to_snake(text: str) -> str
+   - truncate(text: str, max_len: int) -> str  (append '...' when truncated; max_len includes the ellipsis; raise ValueError if max_len < 4)
+   - is_palindrome(text: str) -> bool  (case-insensitive, ignores non-alphanumeric characters)
+2. A unittest test module named test_stringutils.py covering normal cases, edge cases, and the ValueError path.
+3. Every rule the tests must assert (be specific).
+4. Acceptance criteria as a checklist.
+
+MANDATORY: the first line of PLAN.md must be exactly:
+PLAN-ID: AOP-0002230a
+
+Do not create any other files. Do not run any commands other than reading/writing files. When done, reply with just: PLAN-COMPLETE

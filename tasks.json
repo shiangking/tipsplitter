@@ -1,0 +1,108 @@
+{
+  "settings": {
+    "agent_profile_name": "default",
+    "max_iterations": 50,
+    "stuck_detection": true,
+    "poll_interval_s": 3,
+    "default_timeout_s": 600,
+    "default_max_retries": 1
+  },
+  "tasks": [
+    {
+      "id": "plan",
+      "title": "Produce implementation plan for a string utilities module",
+      "model_profile": "glm5.3",
+      "depends_on": [],
+      "expected_artifacts": [
+        "PLAN.md"
+      ],
+      "timeout_s": 600,
+      "max_retries": 1,
+      "verify": {
+        "type": "marker",
+        "file": "PLAN.md",
+        "marker": "PLAN-ID: AOP-{orchestration_id}",
+        "must_contain": [
+          "slugify",
+          "camel_to_snake",
+          "truncate",
+          "is_palindrome"
+        ]
+      },
+      "prompt": "You are the PLANNING agent in a multi-agent pipeline. Work only inside your current workspace directory.\n\nCreate a file named exactly PLAN.md containing an implementation plan for a small, pure-Python string-utilities module. Requirements the plan must cover:\n\n1. A module named stringutils.py exposing these pure functions:\n   - slugify(text: str) -> str  (lowercase, non-alphanumerics collapsed to single hyphen, stripped hyphens at both ends)\n   - camel_to_snake(text: str) -> str\n   - truncate(text: str, max_len: int) -> str  (append '...' when truncated; max_len includes the ellipsis; raise ValueError if max_len < 4)\n   - is_palindrome(text: str) -> bool  (case-insensitive, ignores non-alphanumeric characters)\n2. A unittest test module named test_stringutils.py covering normal cases, edge cases, and the ValueError path.\n3. Every rule the tests must assert (be specific).\n4. Acceptance criteria as a checklist.\n\nMANDATORY: the first line of PLAN.md must be exactly:\n{marker_line}\n\nDo not create any other files. Do not run any commands other than reading/writing files. When done, reply with just: PLAN-COMPLETE"
+    },
+    {
+      "id": "implement",
+      "title": "Implement stringutils module + tests from the approved plan",
+      "model_profile": "deepseekv4.1",
+      "depends_on": [
+        "plan"
+      ],
+      "expected_artifacts": [
+        "stringutils.py",
+        "test_stringutils.py"
+      ],
+      "timeout_s": 900,
+      "max_retries": 1,
+      "verify": {
+        "type": "unittest",
+        "command": "python3 -m unittest discover -v",
+        "needs": [
+          "stringutils.py",
+          "test_stringutils.py"
+        ]
+      },
+      "prompt": "You are the BACKEND IMPLEMENTATION agent in a multi-agent pipeline. Work only inside your current workspace directory.\n\nA planning agent produced the following plan. Implement it EXACTLY as specified.\n\n===== BEGIN PLAN (verbatim from planner) =====\n{plan_text}\n===== END PLAN =====\n\nRules:\n- Create stringutils.py and test_stringutils.py implementing every function and every asserted rule in the plan.\n- The first line of the stringutils.py module docstring must be exactly:\n{marker_line}\n- Run the tests yourself with: python3 -m unittest discover -v\n- Iterate until all tests pass. Do not modify the tests to make failing code pass unless the plan itself is internally contradictory (if so, note it in your final reply).\n- Do not create any other files.\nWhen done, reply with the final unittest summary line (e.g. 'OK') and nothing else."
+    },
+    {
+      "id": "frontend",
+      "title": "Build standalone demo page for the planned string utilities",
+      "model_profile": "qwen3.8flash",
+      "depends_on": [
+        "plan"
+      ],
+      "expected_artifacts": [
+        "index.html"
+      ],
+      "timeout_s": 600,
+      "max_retries": 1,
+      "verify": {
+        "type": "static",
+        "file": "index.html",
+        "must_contain": [
+          "</html>",
+          "<script",
+          "slugify",
+          "camel_to_snake",
+          "truncate",
+          "is_palindrome"
+        ]
+      },
+      "prompt": "You are the FRONTEND IMPLEMENTATION agent in a multi-agent pipeline. Work only inside your current workspace directory.\n\nA planning agent produced this plan for a Python string-utilities module:\n\n===== BEGIN PLAN (verbatim from planner) =====\n{plan_text}\n===== END PLAN =====\n\nCreate a single-file interactive demo page named exactly index.html that:\n- Is valid standalone HTML (doctype, <html>...</html>, embedded <style> and <script>, no external assets, no CDNs).\n- Re-implements the four planned functions (slugify, camel_to_snake, truncate with the same ValueError-equivalent guard, is_palindrome with the same ignore-rules) in plain JavaScript, mirroring the planned Python semantics exactly.\n- Provides a text input, a function selector (radio or select for the four functions), a numeric field for truncate's max_len, a Run button, and an output area.\n- Shows an inline error message (not a crash) when truncate is given max_len < 4.\n- Contains an HTML comment on line 2 with exactly this text: {marker_line}\n- Looks clean with simple CSS (dark text on light background, readable spacing). No frameworks.\nDo not create any other files. When done, reply with just: FRONTEND-COMPLETE"
+    },
+    {
+      "id": "review",
+      "title": "Independent review of implementation, frontend, and verification results",
+      "model_profile": "glm5.3",
+      "depends_on": [
+        "plan",
+        "implement",
+        "frontend"
+      ],
+      "expected_artifacts": [
+        "REVIEW.md"
+      ],
+      "timeout_s": 480,
+      "max_retries": 1,
+      "verify": {
+        "type": "marker",
+        "file": "REVIEW.md",
+        "marker": "PLAN-ID: AOP-{orchestration_id}",
+        "must_contain": [
+          "VERDICT:"
+        ]
+      },
+      "prompt": "You are the INDEPENDENT REVIEW agent. You did not write any of this code. Judge it strictly.\n\nA planner, a backend implementer, and a frontend implementer produced the following. A deterministic verifier already ran the backend tests OUTSIDE any LLM; its result is reported below and you must treat it as ground truth for test pass/fail (you may critique test quality regardless).\n\n===== VERIFICATION RESULT (ground truth, produced by deterministic verifier) =====\n{verify_summary}\n===== END VERIFICATION RESULT =====\n\n===== PLAN (verbatim) =====\n{plan_text}\n===== END PLAN =====\n\n===== backend/stringutils.py =====\n```python\n{implement_stringutils}\n```\n\n===== backend/test_stringutils.py =====\n```python\n{implement_test_stringutils}\n```\n\n===== frontend/index.html =====\n```html\n{frontend_index}\n```\n\nWrite a file named exactly REVIEW.md assessing:\n1. Plan compliance: does the implementation match every planned function/rule?\n2. Test quality: do the tests actually pin the planned behavior (edge cases, error path)?\n3. Frontend fidelity: does the JS mirror the planned semantics (truncate guard, palindrome ignore-rules)?\n4. Any bug, security note, or spec deviation.\n\nThe file MUST end with exactly one line in this format:\nVERDICT: approve|request_changes \u2014 <one-sentence justification>\n\nThe first line of REVIEW.md must be exactly:\n{marker_line}\n\nDo not create any other files. When done, reply with just the VERDICT line."
+    }
+  ]
+}

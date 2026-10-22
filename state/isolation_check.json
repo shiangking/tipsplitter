@@ -1,0 +1,32 @@
+{
+ "probe_conversation_id": "d0b662ec-8105-4035-9ec0-916da49aa53c",
+ "probe_deleted": true,
+ "workspace_dir": "/home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/workspaces/_isolation_probe",
+ "confirmation_policy": {
+  "kind": "NeverConfirm"
+ },
+ "tools": [
+  "terminal",
+  "file_editor",
+  "task_tracker",
+  "browser_tool_set"
+ ],
+ "passed": true,
+ "notes": [
+  "launch shape: agent_profile_id + agent_launch_additions.llm_profile_ref (stored profiles are NOT modified; server resolves credentials itself)",
+  "NeverConfirm is per-conversation in the POC launch body; global settings are never PATCHed by this controller",
+  "agent task workspaces are dedicated dirs under /home/openhands/workspace/project/f199c62a72f74389b311d696bfcadc9b/agent-orchestration-poc/workspaces; no shared workspace, no repo worktree"
+ ],
+ "agent_profile": {
+  "id": "fa6ee148-2e6d-41ba-874c-5c8db4210f49",
+  "name": "default",
+  "llm_profile_ref": "glm5.3"
+ },
+ "settled_status": "finished",
+ "checks": {
+  "workspace_is_probe_dir": true,
+  "tools_present": true,
+  "neverconfirm_scoped": true,
+  "probe_settled_without_agent_loop": true
+ }
+}

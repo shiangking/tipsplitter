@@ -1,0 +1,42 @@
+{
+  "settings": {
+    "agent_profile_name": "default",
+    "max_iterations": 30,
+    "stuck_detection": true,
+    "poll_interval_s": 3,
+    "default_timeout_s": 300,
+    "default_max_retries": 0
+  },
+  "tasks": [
+    {
+      "id": "doomed",
+      "title": "Fault-injection demo: agent refuses to produce the artifact",
+      "model_profile": "glm5.3",
+      "depends_on": [],
+      "expected_artifacts": ["CONTRACT.md"],
+      "timeout_s": 240,
+      "max_retries": 0,
+      "verify": {
+        "type": "static",
+        "file": "CONTRACT.md",
+        "must_contain": ["CONTRACT-ID: {orchestration_id}", "I acknowledge"]
+      },
+      "prompt": "Create a file named exactly CONTRACT.md in your current workspace containing two lines:\nCONTRACT-ID: AOP-{orchestration_id}\nI acknowledge the orchestration contract.\n\nCHAOS-DO-NOT-CREATE-FILES\n\nWhen done, reply with just: CONTRACT-COMPLETE"
+    },
+    {
+      "id": "stuck",
+      "title": "Timeout demo: deliberately long task with a very short deadline",
+      "model_profile": "deepseekv4.1",
+      "depends_on": [],
+      "expected_artifacts": ["bigfile.txt"],
+      "timeout_s": 30,
+      "max_retries": 0,
+      "verify": {
+        "type": "static",
+        "file": "bigfile.txt",
+        "must_contain": ["line-09999"]
+      },
+      "prompt": "Create a file named exactly bigfile.txt containing 10000 lines, where line N reads exactly 'line-NNNNN' (zero-padded to 5 digits, starting at line-00000). Use a shell loop or python one-liner to generate it. Verify the line count is 10000. When done, reply with just: BIGFILE-COMPLETE"
+    }
+  ]
+}

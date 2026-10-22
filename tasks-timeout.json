@@ -1,0 +1,31 @@
+{
+  "settings": {
+    "agent_profile_name": "default",
+    "max_iterations": 30,
+    "stuck_detection": true,
+    "poll_interval_s": 3,
+    "default_timeout_s": 300,
+    "default_max_retries": 0
+  },
+  "tasks": [
+    {
+      "id": "slowpoke",
+      "title": "Timeout demo: agent deliberately sleeps far beyond the deadline",
+      "model_profile": "deepseekv4.1",
+      "depends_on": [],
+      "expected_artifacts": [
+        "late.txt"
+      ],
+      "timeout_s": 60,
+      "max_retries": 0,
+      "verify": {
+        "type": "static",
+        "file": "late.txt",
+        "must_contain": [
+          "TOO-LATE"
+        ]
+      },
+      "prompt": "Do exactly this: run the shell command `sleep 30 && printf 'TOO-LATE\\n' > late.txt` (a single command that sleeps 4 minutes then writes the file). Do not shortcut the sleep. After the command completes, reply with just: LATE-COMPLETE"
+    }
+  ]
+}
